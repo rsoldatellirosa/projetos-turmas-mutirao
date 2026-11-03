@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projetos · Turmas Mutirão</title>
+<style>
+  :root {
+    --cor-principal: #2b2d6e;
+    --cor-fundo: #f4f4f8;
+    --cor-cartao: #ffffff;
+    --cor-texto: #1d1d28;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    background: var(--cor-fundo);
+    color: var(--cor-texto);
+  }
+  header {
+    background: var(--cor-principal);
+    color: #fff;
+    padding: 24px 16px;
+    text-align: center;
+  }
+  header h1 { margin: 0; font-size: 1.4rem; }
+  header p { margin: 6px 0 0; font-size: .9rem; opacity: .85; }
+  main { max-width: 640px; margin: 0 auto; padding: 16px; }
+  a.app {
+    display: block;
+    text-decoration: none;
+    color: var(--cor-texto);
+    background: var(--cor-cartao);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  a.app:hover { box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+  a.app .nome { font-weight: 600; font-size: 1.1rem; }
+  a.app .desc { color: #666; font-size: .9rem; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📱 Estúdio de Apps</h1>
+  <p>Projetos das turmas · Colégio Mutirão</p>
+</header>
+
+<main>
+  <!-- Um link por grupo. Novos grupos entram aqui conforme forem publicados. -->
+  <a class="app" href="gamedata/">
+    <div class="nome">🎮 GameData</div>
+    <div class="desc">Ranking de jogos · 9º ano</div>
+  </a>
+</main>
+
+</body>
+</html>

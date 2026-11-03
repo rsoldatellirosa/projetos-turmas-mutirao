@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GameData · Ranking de Jogos</title>
+<style>
+  /* As cores ainda estão "____" no CLAUDE.md do grupo. Estas são provisórias.
+     Troque os valores aqui quando o grupo decidir as cores. */
+  :root {
+    --cor-principal: #2b2d6e;   /* principal: ____ (provisório) */
+    --cor-destaque:  #f5a623;   /* destaque:  ____ (provisório) */
+    --cor-fundo:     #f4f4f8;   /* fundo:     ____ (provisório) */
+    --cor-cartao:    #ffffff;
+    --cor-texto:     #1d1d28;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    /* Fonte do sistema, sem internet */
+    font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    background: var(--cor-fundo);
+    color: var(--cor-texto);
+  }
+
+  /* Faixa do topo */
+  header {
+    background: var(--cor-principal);
+    color: #fff;
+    padding: 18px 16px;
+    text-align: center;
+  }
+  header h1 { margin: 0; font-size: 1.4rem; }
+  header p  { margin: 4px 0 0; font-size: .9rem; opacity: .85; }
+
+  /* O app todo centralizado e estreito (fica bom no celular e no PC) */
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+
+  /* Cada jogo na lista do ranking */
+  .item-jogo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    background: var(--cor-cartao);
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,.12);
+    font-size: 1rem;
+    color: var(--cor-texto);
+  }
+  .item-jogo:hover { box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+
+  /* A posição no ranking (1, 2, 3...) */
+  .posicao {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--cor-principal);
+    min-width: 28px;
+    text-align: center;
+  }
+
+  .info-item { flex: 1; }
+  .info-item .nome   { font-weight: 600; }
+  .info-item .genero { font-size: .85rem; color: #666; }
+
+  /* A nota em destaque */
+  .nota {
+    background: var(--cor-destaque);
+    color: #1d1d28;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 1.05rem;
+  }
+
+  /* Tela de detalhe */
+  .detalhe {
+    background: var(--cor-cartao);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  .detalhe h2 { margin-top: 0; }
+  .linha {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .linha .rotulo { color: #666; }
+  .linha .valor  { font-weight: 600; }
+  .descricao { margin-top: 16px; line-height: 1.5; }
+
+  button.voltar {
+    margin-bottom: 16px;
+    background: var(--cor-principal);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  /* Esconde a tela que não está sendo usada */
+  .escondida { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎮 GameData</h1>
+  <p>Ranking de jogos mais bem avaliados</p>
+</header>
+
+<main>
+  <!-- ===== TELAS ===== -->
+
+  <!-- Tela 1: Ranking (lista dos jogos) -->
+  <section id="telaRanking"></section>
+
+  <!-- Tela 2: Detalhe de um jogo (começa escondida) -->
+  <section id="telaDetalhe" class="escondida"></section>
+</main>
+
+<script>
+/* ===== DADOS ===== */
+/* Tabela "jogos". A fonte é o dados.csv do grupo.
+   O dados.csv ainda está sem jogos, então usamos exemplos.
+   O campo "descricao" é extra: o app mostra a descrição, mas ela
+   ainda não está na tabela. O grupo decide se vira um campo de verdade. */
+const dados = [
+  // EXEMPLO: trocar pelos dados do grupo
+  { nome: "Minecraft",       nota: 9.5, faturamento: 3000, genero: "Sandbox",    descricao: "Um mundo de blocos onde você constrói e explora do seu jeito." },
+  // EXEMPLO: trocar pelos dados do grupo
+  { nome: "Celeste",         nota: 9.2, faturamento: 120,  genero: "Plataforma", descricao: "Uma garota escala uma montanha em uma aventura difícil e emocionante." },
+  // EXEMPLO: trocar pelos dados do grupo
+  { nome: "Stardew Valley",  nota: 9.0, faturamento: 300,  genero: "Simulação",  descricao: "Você cuida de uma fazenda e faz amizades em uma cidade pequena." }
+];
+
+/* ===== LÓGICA ===== */
+
+// Coloca os jogos em ordem, da maior nota para a menor.
+// SELECT nome, nota, genero FROM jogos ORDER BY nota DESC
+function ordenarPorNota() {
+  // slice() faz uma cópia para não bagunçar a lista original
+  return dados.slice().sort(function (a, b) {
+    return b.nota - a.nota;
+  });
+}
+
+// Mostra a tela de detalhe de um jogo escolhido.
+// SELECT nome, nota, faturamento, genero, descricao FROM jogos WHERE nome = ...
+function mostrarDetalhe(indice) {
+  const jogo = dados[indice];
+  desenharDetalhe(jogo);
+  // Troca de tela: esconde o ranking, mostra o detalhe
+  document.getElementById("telaRanking").classList.add("escondida");
+  document.getElementById("telaDetalhe").classList.remove("escondida");
+}
+
+// Volta do detalhe para o ranking.
+function voltar() {
+  document.getElementById("telaDetalhe").classList.add("escondida");
+  document.getElementById("telaRanking").classList.remove("escondida");
+}
+
+/* ===== TELAS ===== */
+
+// Desenha a lista do ranking na Tela 1.
+function desenharRanking() {
+  const jogos = ordenarPorNota();
+  let html = "";
+
+  // Para cada jogo, cria um botão clicável com posição, nome, gênero e nota.
+  for (let i = 0; i < jogos.length; i++) {
+    const jogo = jogos[i];
+    // Descobre a posição do jogo na lista original, para abrir o detalhe certo
+    const indiceOriginal = dados.indexOf(jogo);
+    html += `
+      <button class="item-jogo" onclick="mostrarDetalhe(${indiceOriginal})">
+        <span class="posicao">${i + 1}</span>
+        <span class="info-item">
+          <div class="nome">${jogo.nome}</div>
+          <div class="genero">${jogo.genero}</div>
+        </span>
+        <span class="nota">${jogo.nota}</span>
+      </button>`;
+  }
+
+  document.getElementById("telaRanking").innerHTML = html;
+}
+
+// Desenha a Tela 2 com os dados de um jogo.
+function desenharDetalhe(jogo) {
+  document.getElementById("telaDetalhe").innerHTML = `
+    <button class="voltar" onclick="voltar()">← Voltar</button>
+    <div class="detalhe">
+      <h2>${jogo.nome}</h2>
+      <div class="linha"><span class="rotulo">Nota</span><span class="valor">${jogo.nota}</span></div>
+      <div class="linha"><span class="rotulo">Gênero</span><span class="valor">${jogo.genero}</span></div>
+      <div class="linha"><span class="rotulo">Faturamento (milhões)</span><span class="valor">${jogo.faturamento}</span></div>
+      <p class="descricao">${jogo.descricao}</p>
+    </div>`;
+}
+
+// Quando a página abre, desenha o ranking.
+desenharRanking();
+</script>
+
+</body>
+</html>
