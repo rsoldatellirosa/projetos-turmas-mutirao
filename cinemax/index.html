@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineMax</title>
+
+  <!-- Deixa o app com cara de aplicativo quando a pessoa "Adicionar à tela inicial".
+       Tudo embutido no arquivo, continua funcionando sem internet. -->
+  <meta name="theme-color" content="#0f0f0f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="CineMax">
+  <meta name="application-name" content="CineMax">
+  <!-- ícone do app (um SVG desenhado aqui mesmo, guardado em base64) -->
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9Ijk2IiBmaWxsPSIjMGYwZjBmIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIxNTAiIGZpbGw9IiNlMjNiM2IiLz48cGF0aCBkPSJNMjIyIDE4OCBMMzMyIDI1NiBMMjIyIDMyNCBaIiBmaWxsPSIjZmZmZmZmIi8+PC9zdmc+">
+  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9Ijk2IiBmaWxsPSIjMGYwZjBmIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIxNTAiIGZpbGw9IiNlMjNiM2IiLz48cGF0aCBkPSJNMjIyIDE4OCBMMzMyIDI1NiBMMjIyIDMyNCBaIiBmaWxsPSIjZmZmZmZmIi8+PC9zdmc+">
+  <!--
+    CineMax · app para ajudar a escolher o que assistir.
+    Grupo Filmes e Séries · 8º ano.
+    Tudo em um arquivo só, funciona sem internet.
+    O código tem três camadas: DADOS, LÓGICA e TELAS (procure os comentários).
+  -->
+  <style>
+    /* Cores do grupo: fundo preto, texto branco, destaque vermelho */
+    :root{
+      --fundo: #0f0f0f;
+      --cartao: #1d1d1d;
+      --texto: #ffffff;
+      --cinza: #9a9a9a;
+      --vermelho: #e23b3b;
+    }
+
+    *{ box-sizing: border-box; }
+
+    body{
+      margin: 0;
+      /* fontes do sistema, sem internet */
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--fundo);
+      color: var(--texto);
+      /* espaço embaixo para a barra fixa não cobrir o conteúdo */
+      padding-bottom: 72px;
+    }
+
+    /* o app fica centralizado em telas grandes */
+    .app{ max-width: 900px; margin: 0 auto; }
+
+    /* ----- cabeçalho da tela Início ----- */
+    .topo{
+      background: #000;
+      padding: 14px 16px;
+      border-radius: 0 0 18px 18px;
+    }
+    .logo{ font-size: 22px; font-weight: bold; margin-bottom: 10px; }
+    .busca{
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+    }
+
+    /* ----- cabeçalho das telas Catálogo e Detalhe ----- */
+    .topo2{
+      background: #000;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .voltar{
+      background: none; border: none; color: var(--texto);
+      font-size: 22px; cursor: pointer;
+    }
+
+    /* ----- banner e botão ----- */
+    .banner{
+      margin: 16px;
+      padding: 22px 18px;
+      background: linear-gradient(135deg, #2a2a2a, #111);
+      border: 1px solid #333;
+      border-radius: 14px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .banner small{ display:block; margin-top:8px; color: var(--cinza); font-weight: normal; }
+
+    .botaoCatalogo{
+      display: block;
+      margin: 0 16px 10px;
+      padding: 12px;
+      width: calc(100% - 32px);
+      background: var(--vermelho);
+      color: #fff;
+      border: none;
+      border-radius: 22px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    h2{ margin: 18px 16px 10px; font-size: 18px; }
+
+    /* ----- faixa que rola de lado ----- */
+    .faixa{
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 0 16px 8px;
+    }
+    .faixa .cartao{ flex: 0 0 130px; }
+
+    /* ----- grade de cartões ----- */
+    .grade{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+      padding: 12px 16px;
+    }
+
+    /* ----- cartão de um título ----- */
+    .cartao{
+      background: var(--cartao);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .poster{
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      background: linear-gradient(160deg, #3a3a3a, #141414);
+    }
+    .cartaoInfo{ padding: 8px; }
+    .cartaoNome{ font-size: 14px; font-weight: bold; margin-bottom: 6px; }
+    .nota{
+      background: var(--vermelho);
+      color: #fff;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    /* ----- abas de gênero ----- */
+    .abas{
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 16px 0;
+    }
+    .abas button{
+      flex: 0 0 auto;
+      background: var(--cartao);
+      color: var(--texto);
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 8px 14px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .abas button.ativa{ background: var(--vermelho); border-color: var(--vermelho); }
+
+    /* ----- tela de detalhe ----- */
+    .cartaz{ padding: 16px; }
+    .posterGrande{
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 72px;
+      background: linear-gradient(160deg, #3a3a3a, #141414);
+      border-radius: 14px;
+    }
+    .cartaz h1{ margin: 14px 0 6px; font-size: 24px; }
+    .notaLinha{ color: var(--cinza); margin-bottom: 12px; }
+    .chips{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .chip{
+      background: var(--cartao);
+      border: 1px solid #333;
+      border-radius: 14px;
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+    .ondeAssistir{
+      background: var(--cartao);
+      border-left: 4px solid var(--vermelho);
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .vazio{ color: var(--cinza); padding: 20px 16px; }
+
+    /* ----- barra fixa de baixo ----- */
+    .rodape{
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #000;
+      display: flex;
+      border-top: 1px solid #222;
+    }
+    .rodape button{
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--texto);
+      padding: 10px 0;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .oculto{ display: none; }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- ===== TELA 1: INÍCIO ===== -->
+    <section id="tela-inicio" class="tela">
+      <header class="topo">
+        <div class="logo">🎬 CineMax</div>
+        <input id="campoBusca" class="busca" placeholder="🔎 Buscar filme ou série">
+      </header>
+
+      <!-- parte normal da tela Início -->
+      <div id="inicioPadrao">
+        <div class="banner">
+          Grandes histórias te esperam!
+          <small>Filmes, séries e muito mais...</small>
+        </div>
+        <button class="botaoCatalogo" onclick="irParaCatalogo()">📋 Catálogo</button>
+        <h2>Mais bem avaliados</h2>
+        <div id="faixaMaisBemAvaliados" class="faixa"></div>
+      </div>
+
+      <!-- resultados da busca (aparece quando a pessoa digita) -->
+      <div id="inicioResultados" class="oculto">
+        <h2>Resultados da busca</h2>
+        <div id="gradeResultados" class="grade"></div>
+      </div>
+    </section>
+
+    <!-- ===== TELA 2: DETALHE ===== -->
+    <section id="tela-detalhe" class="tela oculto">
+      <header class="topo2">
+        <button class="voltar" onclick="irParaInicio()">←</button>
+        <span>Detalhes</span>
+      </header>
+      <div id="conteudoDetalhe"></div>
+    </section>
+
+    <!-- ===== TELA 3: CATÁLOGO ===== -->
+    <section id="tela-catalogo" class="tela oculto">
+      <header class="topo2">
+        <button class="voltar" onclick="irParaInicio()">←</button>
+        <span>Catálogo</span>
+      </header>
+      <div id="abasGenero" class="abas"></div>
+      <div id="gradeCatalogo" class="grade"></div>
+    </section>
+
+  </div>
+
+  <!-- barra de baixo: aparece em todas as telas -->
+  <nav class="rodape">
+    <button onclick="irParaInicio()">🏠<br>Início</button>
+    <button onclick="focarBusca()">🔎<br>Pesquisa</button>
+    <button onclick="irParaCatalogo()">📋<br>Catálogo</button>
+  </nav>
+
+  <script>
+    /* ===== DADOS ===== */
+    /* A tabela "titulos" fica aqui dentro, numa lista chamada "dados".
+       Cada item é um registro (uma linha). Os campos são as colunas.
+       Vem do dados.csv do grupo (24 títulos).
+       plataforma vazia ("") = o grupo ainda vai definir onde assistir. */
+    const dados = [
+      { nome: "Smallville",        genero: "Ficção científica / Drama / Ação", plataforma: "Netflix",     classificacao_indicativa: "14+",   rotten_tomatoes: 78 },
+      { nome: "The Walking Dead",  genero: "Terror / Drama / Suspense",        plataforma: "Disney+",     classificacao_indicativa: "18+",   rotten_tomatoes: 78 },
+      { nome: "Coraline",          genero: "Animação / Fantasia / Terror",     plataforma: "Prime Video", classificacao_indicativa: "Livre", rotten_tomatoes: 91 },
+      { nome: "The Vampire Diaries", genero: "Drama / Fantasia / Romance",     plataforma: "Netflix",     classificacao_indicativa: "16+",   rotten_tomatoes: 86 },
+      { nome: "O Mentalista",      genero: "Drama / Crime / Mistério",         plataforma: "Netflix",     classificacao_indicativa: "14+",   rotten_tomatoes: 90 },
+      { nome: "Stranger Things",   genero: "Ficção científica / Terror",       plataforma: "",            classificacao_indicativa: "16+",   rotten_tomatoes: 90 },
+      { nome: "Breaking Bad",      genero: "Drama / Crime",                    plataforma: "",            classificacao_indicativa: "16+",   rotten_tomatoes: 96 },
+      { nome: "Wandinha",          genero: "Fantasia / Mistério",              plataforma: "",            classificacao_indicativa: "16+",   rotten_tomatoes: 80 },
+      { nome: "Bridgerton",        genero: "Drama / Romance",                  plataforma: "",            classificacao_indicativa: "16+",   rotten_tomatoes: 83 },
+      { nome: "Dark",              genero: "Ficção científica / Mistério",     plataforma: "",            classificacao_indicativa: "16+",   rotten_tomatoes: 95 },
+      { nome: "Squid Game",        genero: "Suspense / Drama",                 plataforma: "",            classificacao_indicativa: "16+",   rotten_tomatoes: 86 },
+      { nome: "Outer Banks",       genero: "Aventura / Drama / Mistério",      plataforma: "",            classificacao_indicativa: "16+",   rotten_tomatoes: 78 },
+      { nome: "Loki",              genero: "Ação / Fantasia",                  plataforma: "",            classificacao_indicativa: "12+",   rotten_tomatoes: 87 },
+      { nome: "Lúcifer",           genero: "Drama / Fantasia / Crime",         plataforma: "",            classificacao_indicativa: "16+",   rotten_tomatoes: 65 },
+      { nome: "The Last Of Us",    genero: "Drama / Ficção científica",        plataforma: "",            classificacao_indicativa: "16+",   rotten_tomatoes: 94 },
+      { nome: "Game Of Thrones",   genero: "Fantasia / Drama",                 plataforma: "",            classificacao_indicativa: "16+",   rotten_tomatoes: 89 },
+      { nome: "Friends",           genero: "Comédia / Romance",                plataforma: "",            classificacao_indicativa: "12+",   rotten_tomatoes: 78 },
+      { nome: "Avengers: Endgame", genero: "Ação / Ficção científica",         plataforma: "",            classificacao_indicativa: "12+",   rotten_tomatoes: 94 },
+      { nome: "Euphoria",          genero: "Drama / Adolescente",              plataforma: "",            classificacao_indicativa: "18+",   rotten_tomatoes: 80 },
+      { nome: "Jurassic Park",     genero: "Aventura / Ficção científica",     plataforma: "",            classificacao_indicativa: "10+",   rotten_tomatoes: 91 },
+      { nome: "Interestelar",      genero: "Ficção científica / Drama",        plataforma: "",            classificacao_indicativa: "10+",   rotten_tomatoes: 73 },
+      { nome: "Oppenheimer",       genero: "Drama / História",                 plataforma: "",            classificacao_indicativa: "16+",   rotten_tomatoes: 91 },
+      { nome: "Coringa",           genero: "Drama / Crime / Suspense",         plataforma: "",            classificacao_indicativa: "16+",   rotten_tomatoes: 69 },
+      { nome: "Shrek",             genero: "Animação / Comédia / Fantasia",    plataforma: "",            classificacao_indicativa: "Livre", rotten_tomatoes: 88 }
+    ];
+
+
+    /* ===== LÓGICA ===== */
+
+    // Busca títulos pelo nome digitado.
+    // SELECT nome, genero, plataforma, classificacao_indicativa, rotten_tomatoes
+    //   FROM titulos WHERE nome LIKE '%texto%'
+    function buscarPorNome(texto){
+      const procura = texto.trim().toLowerCase();
+      return dados.filter(function(titulo){
+        return titulo.nome.toLowerCase().includes(procura);
+      });
+    }
+
+    // Mostra só os bem avaliados (nota do Rotten Tomatoes acima de 85), do maior para o menor.
+    // SELECT nome, rotten_tomatoes FROM titulos WHERE rotten_tomatoes > 85 ORDER BY rotten_tomatoes DESC
+    function filtrarMaisBemAvaliados(){
+      return dados
+        .filter(function(titulo){ return titulo.rotten_tomatoes > 85; })
+        .sort(function(a, b){ return b.rotten_tomatoes - a.rotten_tomatoes; });
+    }
+
+    // Filtra os títulos de um gênero (um título pode ter mais de um gênero).
+    // SELECT nome, genero FROM titulos WHERE genero LIKE '%genero%'
+    function filtrarPorGenero(genero){
+      return dados.filter(function(titulo){
+        return titulo.genero.includes(genero);
+      });
+    }
+
+    // Títulos parecidos: mesmo gênero, menos o que já está aberto.
+    // SELECT nome, genero FROM titulos WHERE genero LIKE '%genero%' AND nome <> 'nomeAtual'
+    function maisComoEste(tituloAtual){
+      const generos = tituloAtual.genero.split("/").map(function(g){ return g.trim(); });
+      return dados.filter(function(titulo){
+        if(titulo.nome === tituloAtual.nome) return false;
+        return generos.some(function(g){ return titulo.genero.includes(g); });
+      });
+    }
+
+    // Monta a lista de gêneros diferentes, para virar as abas do Catálogo.
+    function listarGeneros(){
+      const lista = [];
+      for(const titulo of dados){
+        for(let g of titulo.genero.split("/")){
+          g = g.trim();
+          if(g && !lista.includes(g)) lista.push(g);
+        }
+      }
+      return lista;
+    }
+
+
+    /* ===== TELAS ===== */
+
+    // Troca a tela que aparece na tela.
+    function abrirTela(idTela){
+      const telas = document.querySelectorAll(".tela");
+      for(const tela of telas) tela.classList.add("oculto");
+      document.getElementById(idTela).classList.remove("oculto");
+      window.scrollTo(0, 0);
+    }
+
+    // Cria o cartãozinho de um título (usado nas faixas e nas grades).
+    function criarCartao(titulo){
+      const cartao = document.createElement("div");
+      cartao.className = "cartao";
+      cartao.onclick = function(){ mostrarDetalhe(titulo.nome); };
+      cartao.innerHTML =
+        '<div class="poster">🎬</div>' +
+        '<div class="cartaoInfo">' +
+          '<div class="cartaoNome">' + titulo.nome + '</div>' +
+          '<span class="nota">' + titulo.rotten_tomatoes + '%</span>' +
+        '</div>';
+      return cartao;
+    }
+
+    // Coloca uma lista de títulos dentro de um espaço da tela.
+    function renderizarEm(idContainer, lista){
+      const container = document.getElementById(idContainer);
+      container.innerHTML = "";
+      if(lista.length === 0){
+        container.innerHTML = '<p class="vazio">Nenhum título encontrado.</p>';
+        return;
+      }
+      for(const titulo of lista) container.appendChild(criarCartao(titulo));
+    }
+
+    // Abre a tela de detalhe de um título.
+    function mostrarDetalhe(nome){
+      // Procura o título escolhido na tabela.
+      // SELECT nome, genero, plataforma, classificacao_indicativa, rotten_tomatoes
+      //   FROM titulos WHERE nome = 'nome'
+      const titulo = dados.find(function(t){ return t.nome === nome; });
+      if(!titulo) return;
+
+      document.getElementById("conteudoDetalhe").innerHTML =
+        '<div class="cartaz">' +
+          '<div class="posterGrande">🎬</div>' +
+          '<h1>' + titulo.nome + '</h1>' +
+          '<div class="notaLinha">🍅 ' + titulo.rotten_tomatoes + '% no Rotten Tomatoes</div>' +
+          '<div class="chips">' +
+            '<span class="chip">🔞 ' + titulo.classificacao_indicativa + '</span>' +
+            '<span class="chip">🎭 ' + titulo.genero + '</span>' +
+          '</div>' +
+          '<div class="ondeAssistir">▶ Onde assistir: <strong>' + (titulo.plataforma || "(a definir)") + '</strong></div>' +
+        '</div>' +
+        '<h2>Mais como este</h2>' +
+        '<div id="faixaSemelhantes" class="faixa"></div>';
+
+      renderizarEm("faixaSemelhantes", maisComoEste(titulo));
+      abrirTela("tela-detalhe");
+    }
+
+    // Monta as abas de gênero do Catálogo.
+    function montarAbas(){
+      const abas = document.getElementById("abasGenero");
+      abas.innerHTML = "";
+
+      // aba "Todos" mostra o catálogo inteiro
+      const botaoTodos = document.createElement("button");
+      botaoTodos.textContent = "Todos";
+      botaoTodos.className = "ativa";
+      botaoTodos.onclick = function(){ selecionarAba(botaoTodos); renderizarEm("gradeCatalogo", dados); };
+      abas.appendChild(botaoTodos);
+
+      // uma aba para cada gênero
+      for(const genero of listarGeneros()){
+        const botao = document.createElement("button");
+        botao.textContent = genero;
+        botao.onclick = function(){ selecionarAba(botao); renderizarEm("gradeCatalogo", filtrarPorGenero(genero)); };
+        abas.appendChild(botao);
+      }
+    }
+
+    // Deixa só a aba clicada em vermelho.
+    function selecionarAba(botaoAtivo){
+      for(const botao of document.querySelectorAll("#abasGenero button")) botao.classList.remove("ativa");
+      botaoAtivo.classList.add("ativa");
+    }
+
+    // Botões de navegação
+    function irParaInicio(){ abrirTela("tela-inicio"); }
+
+    function irParaCatalogo(){
+      montarAbas();
+      renderizarEm("gradeCatalogo", dados);
+      abrirTela("tela-catalogo");
+    }
+
+    function focarBusca(){
+      irParaInicio();
+      document.getElementById("campoBusca").focus();
+    }
+
+    // Liga o campo de busca: digitou, mostra os resultados; apagou, volta ao normal.
+    function configurarBusca(){
+      document.getElementById("campoBusca").addEventListener("input", function(evento){
+        const texto = evento.target.value;
+        const padrao = document.getElementById("inicioPadrao");
+        const resultados = document.getElementById("inicioResultados");
+        if(texto.trim() === ""){
+          padrao.classList.remove("oculto");
+          resultados.classList.add("oculto");
+        }else{
+          padrao.classList.add("oculto");
+          resultados.classList.remove("oculto");
+          renderizarEm("gradeResultados", buscarPorNome(texto));
+        }
+      });
+    }
+
+    // Liga o app quando a página abre.
+    function iniciar(){
+      renderizarEm("faixaMaisBemAvaliados", filtrarMaisBemAvaliados());
+      configurarBusca();
+      irParaInicio();
+    }
+
+    iniciar();
+  </script>
+</body>
+</html>
