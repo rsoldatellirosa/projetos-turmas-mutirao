@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfumaria</title>
+
+  <style>
+    /* ===== Cores (provisórias, tiradas das 3 palavras do grupo:
+       conforto, segurança, confiança). O grupo pode trocar aqui. ===== */
+    :root{
+      --principal: #355c66;   /* azul-petróleo — confiança e segurança */
+      --destaque:  #c69749;   /* dourado suave — elegância e conforto */
+      --fundo:     #f5f0e8;   /* creme claro — conforto */
+      --cartao:    #ffffff;
+      --texto:     #2b2b2b;
+      --texto-suave: #6b6b6b;
+    }
+
+    *{ box-sizing: border-box; }
+
+    body{
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      background: var(--fundo);
+      color: var(--texto);
+    }
+
+    /* Cabeçalho do app */
+    header{
+      background: var(--principal);
+      color: #fff;
+      padding: 18px 16px;
+      text-align: center;
+    }
+    header h1{ margin: 0; font-size: 1.5rem; letter-spacing: 1px; }
+    header p{ margin: 4px 0 0; opacity: .85; font-size: .9rem; }
+
+    main{ max-width: 900px; margin: 0 auto; padding: 16px; }
+
+    /* Barra de busca e ordenação */
+    .barra{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .barra input{
+      flex: 1 1 200px;
+      padding: 12px;
+      font-size: 1rem;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+    }
+    .barra button{
+      padding: 12px 16px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      background: var(--destaque);
+      color: #fff;
+      cursor: pointer;
+    }
+    .barra button:hover{ opacity: .9; }
+
+    /* Grade de perfumes */
+    .grade{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 14px;
+    }
+    .cartao{
+      background: var(--cartao);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+    .cartao:hover{ border-color: var(--destaque); }
+    .cartao .nome{ font-size: 1.15rem; font-weight: 700; }
+    .cartao .marca{ color: var(--texto-suave); margin: 2px 0 10px; }
+    .cartao .preco{ color: var(--principal); font-weight: 700; font-size: 1.1rem; }
+    .cartao .toque{ margin-top: 10px; font-size: .8rem; color: var(--texto-suave); }
+
+    .vazio{ text-align: center; color: var(--texto-suave); padding: 30px; }
+
+    /* Tela de detalhe */
+    .detalhe{
+      background: var(--cartao);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      text-align: center;
+    }
+    .detalhe .emoji{ font-size: 3rem; }
+    .detalhe h2{ margin: 8px 0 2px; font-size: 1.6rem; }
+    .detalhe .marca{ color: var(--texto-suave); font-size: 1.1rem; }
+    .detalhe .preco{
+      color: var(--principal);
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin: 16px 0;
+    }
+    .detalhe .faturamento{ color: var(--texto); font-size: 1.05rem; }
+    .detalhe .nota{ color: var(--texto-suave); font-size: .8rem; }
+    .voltar{
+      margin-bottom: 16px;
+      padding: 10px 16px;
+      border: 2px solid var(--principal);
+      background: #fff;
+      color: var(--principal);
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    /* Esconde a tela que não está em uso */
+    .escondida{ display: none; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🧴 Perfumaria</h1>
+    <p>Conheça os perfumes antes de comprar</p>
+  </header>
+
+  <main>
+    <!-- ===== TELA 1: COLEÇÃO ===== -->
+    <section id="telaColecao">
+      <div class="barra">
+        <!-- Campo de busca por nome -->
+        <input id="campoBusca" type="text" placeholder="Buscar pelo nome do perfume...">
+        <!-- Botão para ordenar por preço -->
+        <button id="botaoOrdenar">Ordenar por preço: menor</button>
+      </div>
+      <!-- Aqui a lógica desenha os cartões dos perfumes -->
+      <div id="grade" class="grade"></div>
+    </section>
+
+    <!-- ===== TELA 2: DETALHE ===== -->
+    <section id="telaDetalhe" class="escondida">
+      <button class="voltar" onclick="voltarParaColecao()">← Voltar</button>
+      <!-- Aqui a lógica desenha os detalhes do perfume escolhido -->
+      <div id="detalhe" class="detalhe"></div>
+    </section>
+  </main>
+
+  <script>
+    /* ===== DADOS =====
+       Tabela: perfumes.  Campos: nome, valor, marca, faturamento.
+       Fonte: dados.csv do grupo. Quando o CSV mudar, atualize esta lista.
+       Faturamento: só o "My Self" tem valor por enquanto; os outros ficam null. */
+    const dados = [
+      { nome: "My Self",     valor: 950,  marca: "Yves Saint Laurent", faturamento: 250  },
+      { nome: "Renaissance", valor: 2000, marca: "Xerjoff",            faturamento: null },
+      { nome: "Erba Pura",   valor: 1650, marca: "Xerjoff",            faturamento: null },
+      { nome: "Intense",     valor: 550,  marca: "Valentino",          faturamento: null },
+      { nome: "Malbec",      valor: 250,  marca: "O Boticário",        faturamento: null }
+    ];
+
+    /* ===== LÓGICA ===== */
+
+    // O que o usuário digitou na busca e qual ordem escolheu
+    let textoBusca = "";
+    let ordemAtual = "nenhuma"; // "nenhuma" | "crescente" | "decrescente"
+
+    // Monta a lista de perfumes que deve aparecer na tela,
+    // aplicando a busca por nome e depois a ordenação por preço.
+    function listaVisivel(){
+      let lista = dados;
+
+      // Filtro: mostra só os perfumes cujo nome combina com a busca
+      // SELECT nome, valor, marca FROM perfumes WHERE nome LIKE '%textoBusca%'
+      if (textoBusca !== ""){
+        lista = lista.filter(function(perfume){
+          return perfume.nome.toLowerCase().includes(textoBusca.toLowerCase());
+        });
+      }
+
+      // Ordenação: do mais barato para o mais caro
+      // SELECT nome, valor, marca FROM perfumes ORDER BY valor ASC
+      if (ordemAtual === "crescente"){
+        lista = [...lista].sort(function(a, b){ return a.valor - b.valor; });
+      }
+      // Ordenação: do mais caro para o mais barato
+      // SELECT nome, valor, marca FROM perfumes ORDER BY valor DESC
+      else if (ordemAtual === "decrescente"){
+        lista = [...lista].sort(function(a, b){ return b.valor - a.valor; });
+      }
+
+      return lista;
+    }
+
+    // Deixa o preço no formato brasileiro, ex.: 2000 vira "R$ 2.000"
+    function formatarPreco(valor){
+      return "R$ " + valor.toLocaleString("pt-BR");
+    }
+
+    /* ===== TELAS ===== */
+
+    // Desenha os cartões da coleção na tela
+    function mostrarColecao(){
+      const grade = document.getElementById("grade");
+      const lista = listaVisivel();
+      grade.innerHTML = "";
+
+      // SE nenhum perfume combinou com a busca, ENTÃO avisa
+      if (lista.length === 0){
+        grade.innerHTML = "<p class='vazio'>Nenhum perfume encontrado.</p>";
+        return;
+      }
+
+      // Para cada perfume, cria um cartão clicável
+      lista.forEach(function(perfume){
+        const cartao = document.createElement("div");
+        cartao.className = "cartao";
+        cartao.innerHTML =
+          "<div class='nome'>" + perfume.nome + "</div>" +
+          "<div class='marca'>" + perfume.marca + "</div>" +
+          "<div class='preco'>" + formatarPreco(perfume.valor) + "</div>" +
+          "<div class='toque'>Toque para ver detalhes</div>";
+        // Ao clicar no cartão, abre o detalhe desse perfume
+        cartao.onclick = function(){ mostrarDetalhe(perfume.nome); };
+        grade.appendChild(cartao);
+      });
+    }
+
+    // Abre a tela de detalhe de um perfume escolhido pelo nome
+    function mostrarDetalhe(nome){
+      // SELECT nome, valor, marca, faturamento FROM perfumes WHERE nome = 'My Self'
+      const perfume = dados.find(function(p){ return p.nome === nome; });
+
+      // Monta o faturamento só quando o perfume tem esse dado
+      let linhaFaturamento = "";
+      // SE o perfume tem faturamento, ENTÃO mostramos; SENÃO, deixamos de fora
+      if (perfume.faturamento !== null){
+        linhaFaturamento =
+          "<p class='faturamento'>Faturamento: " + perfume.faturamento + "</p>" +
+          "<p class='nota'>unidade a definir pelo grupo</p>";
+      }
+
+      const detalhe = document.getElementById("detalhe");
+      detalhe.innerHTML =
+        "<div class='emoji'>🧴</div>" +
+        "<h2>" + perfume.nome + "</h2>" +
+        "<p class='marca'>" + perfume.marca + "</p>" +
+        "<p class='preco'>" + formatarPreco(perfume.valor) + "</p>" +
+        linhaFaturamento;
+
+      // Troca a tela: esconde a coleção e mostra o detalhe
+      document.getElementById("telaColecao").classList.add("escondida");
+      document.getElementById("telaDetalhe").classList.remove("escondida");
+    }
+
+    // Volta da tela de detalhe para a coleção
+    function voltarParaColecao(){
+      document.getElementById("telaDetalhe").classList.add("escondida");
+      document.getElementById("telaColecao").classList.remove("escondida");
+    }
+
+    /* ===== LIGAÇÕES (o que acontece quando o usuário mexe) ===== */
+
+    // Quando digita na busca, atualiza o texto e redesenha a coleção
+    document.getElementById("campoBusca").oninput = function(){
+      textoBusca = this.value;
+      mostrarColecao();
+    };
+
+    // Quando clica em ordenar, alterna entre menor e maior preço
+    document.getElementById("botaoOrdenar").onclick = function(){
+      // SE estava do menor para o maior, ENTÃO passa a ser do maior para o menor
+      if (ordemAtual === "crescente"){
+        ordemAtual = "decrescente";
+        this.textContent = "Ordenar por preço: maior";
+      } else {
+        ordemAtual = "crescente";
+        this.textContent = "Ordenar por preço: menor";
+      }
+      mostrarColecao();
+    };
+
+    // Desenha a coleção assim que o app abre
+    mostrarColecao();
+  </script>
+
+</body>
+</html>
