@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Protótipo escolar: pede aos buscadores para NÃO indexar nem seguir esta página -->
+  <meta name="robots" content="noindex, nofollow">
+  <!-- Faz o site abrir como um app quando a pessoa usa "Adicionar à tela de início" -->
+  <meta name="theme-color" content="#b3261e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="La Pizzaiole">
+  <!-- Ícone da pizzaria, desenhado aqui mesmo (sem imagem da internet) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23e8b25c'/><circle cx='50' cy='50' r='38' fill='%23f6d77a'/><circle cx='38' cy='40' r='7' fill='%23c0392b'/><circle cx='62' cy='38' r='6' fill='%23c0392b'/><circle cx='58' cy='62' r='7' fill='%23c0392b'/></svg>">
+  <!-- O título da aba é sempre o da pizzaria, mesmo quando a ajuda está aberta -->
+  <title>La Pizzaiole</title>
+  <style>
+    /* Cores do site. As cores da pizzaria ainda são uma escolha do grupo (CLAUDE.md). */
+    :root {
+      --tomate: #b3261e;
+      --tomate-escuro: #8c1d17;
+      --creme: #fff7e8;
+      --manjericao: #2f6b35;
+      --texto: #2a1f1a;
+      --texto-suave: #6b5a4e;
+      --ajuda-fundo: #f4f2fb;
+      --ajuda-cartao: #ffffff;
+      --ajuda-texto: #2a2540;
+      --ajuda-destaque: #5a4a9c;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+      color: var(--texto);
+      background: var(--creme);
+    }
+
+    /* ----- Partes da pizzaria (o disfarce) ----- */
+    .cabecalho {
+      background: var(--tomate);
+      color: #fff;
+      text-align: center;
+      padding: 24px 16px;
+    }
+    /* O nome da pizzaria é a marca do site (aparece na faixa vermelha), não um título de tela */
+    .cabecalho .marca { margin: 0; font-size: 2rem; font-weight: 800; }
+    .slogan { margin: 6px 0 0; }
+
+    .conteudo {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+    .conteudo h1 { color: var(--tomate-escuro); margin: 4px 0 16px; font-size: 1.5rem; }
+
+    .boas-vindas { text-align: center; padding: 48px 16px; }
+    .boas-vindas h1 { font-size: 1.6rem; color: var(--tomate-escuro); }
+
+    .botao-grande {
+      display: inline-block;
+      min-height: 48px;
+      padding: 12px 28px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--tomate);
+      color: #fff;
+      font: inherit;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Cada pizza do cardápio é um botão, para poder ser tocada */
+    .lista-pizzas { list-style: none; padding: 0; margin: 0; }
+    .pizza {
+      display: flex;
+      gap: 14px;
+      width: 100%;
+      text-align: left;
+      background: #fff;
+      border: 1px solid #e2cfae;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+    }
+    .pizza svg { width: 64px; height: 64px; flex: none; }
+    .pizza-nome { margin: 0; font-weight: 700; font-size: 1.1rem; color: var(--tomate-escuro); }
+    .pizza-ingredientes { margin: 4px 0 0; font-size: 0.95rem; color: var(--texto-suave); }
+
+    .detalhe-pizza svg { width: 120px; height: 120px; display: block; margin: 0 auto 12px; }
+
+    .botao-voltar {
+      min-height: 48px;
+      padding: 10px 22px;
+      border: 1px solid var(--tomate);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--tomate-escuro);
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .rodape {
+      background: var(--manjericao);
+      color: #fff;
+      text-align: center;
+      padding: 18px 16px;
+      font-size: 0.9rem;
+    }
+
+    /* ----- Partes da ajuda (escondida) ----- */
+    .tela-ajuda {
+      min-height: 100vh;
+      background: var(--ajuda-fundo);
+      color: var(--ajuda-texto);
+    }
+
+    /* "Sair agora" fica preso no canto da tela, sempre visível */
+    .botao-sair {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 10;
+      min-height: 48px;
+      padding: 10px 20px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--ajuda-texto);
+      color: #fff;
+      font: inherit;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .ajuda-conteudo {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 84px 16px 24px;
+    }
+    .ajuda-conteudo h1 { margin: 0 0 4px; font-size: 1.8rem; }
+    .ajuda-conteudo h1:focus { outline: none; }
+
+    .caixa-destaque {
+      background: var(--ajuda-destaque);
+      color: #fff;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin: 18px 0;
+    }
+    .caixa-destaque p { margin: 0; }
+    .caixa-destaque .numeros { font-size: 1.6rem; font-weight: 800; }
+
+    .botoes-ajuda { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+    .botao-ajuda {
+      min-height: 48px;
+      padding: 10px 22px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--ajuda-destaque);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .lista-servicos { list-style: none; padding: 0; margin: 0; }
+    .servico {
+      background: var(--ajuda-cartao);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(42, 37, 64, 0.08);
+    }
+    .servico h2 { margin: 0 0 6px; font-size: 1.2rem; }
+    .servico p { margin: 4px 0 0; }
+    .servico .contato { font-size: 1.6rem; font-weight: 800; color: var(--ajuda-destaque); }
+
+    .rodape-ajuda {
+      margin-top: 32px;
+      font-size: 0.85rem;
+      color: var(--texto-suave);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== TELAS ===== -->
+  <!-- Cada <section> é uma tela. Só uma aparece por vez; as outras ficam com "hidden". -->
+
+  <!-- TELA 1: Início da pizzaria (o disfarce). É o que aparece quando o site abre. -->
+  <section id="tela-inicio">
+    <header class="cabecalho">
+      <p class="marca">La Pizzaiole</p>
+      <p class="slogan">Pizza artesanal no forno a lenha</p>
+    </header>
+    <main class="boas-vindas">
+      <h1>Bem-vindo(a) à La Pizzaiole</h1>
+      <button id="ir-cardapio" class="botao-grande" type="button">Ver cardápio</button>
+    </main>
+    <footer class="rodape">La Pizzaiole · Pizzaria de bairro</footer>
+  </section>
+
+  <!-- TELA 2: Cardápio. Mostra as 4 pizzas. Tocar numa pizza abre a pizza (ou a ajuda). -->
+  <section id="tela-cardapio" hidden>
+    <header class="cabecalho"><p class="marca">La Pizzaiole</p></header>
+    <main class="conteudo">
+      <h1>Escolha sua pizza</h1>
+      <ul id="lista-pizzas" class="lista-pizzas"></ul>
+    </main>
+  </section>
+
+  <!-- TELA 3: Pizza escolhida (detalhe normal de uma pizza). Faz parte do disfarce. -->
+  <section id="tela-pizza" hidden>
+    <header class="cabecalho"><p class="marca">La Pizzaiole</p></header>
+    <main class="conteudo detalhe-pizza">
+      <div id="pizza-desenho"></div>
+      <h1 id="pizza-titulo"></h1>
+      <p id="pizza-texto"></p>
+      <button id="voltar-cardapio-1" class="botao-voltar" type="button">Voltar ao cardápio</button>
+    </main>
+  </section>
+
+  <!-- TELA 4: Ajuda escondida. Abre ao tocar na pizza Calabresa. -->
+  <section id="tela-ajuda" class="tela-ajuda" hidden>
+    <button class="botao-sair" type="button" data-sair>Sair agora</button>
+    <main class="ajuda-conteudo">
+      <h1 id="titulo-ajuda" tabindex="-1">Você não está sozinha</h1>
+      <p>Tipo de violência: <strong>abuso físico</strong></p>
+
+      <div class="caixa-destaque">
+        <p>Para denunciar ou pedir ajuda, ligue:</p>
+        <p class="numeros">180 ou 190</p>
+      </div>
+
+      <h2>O que é</h2>
+      <p>O abuso físico é qualquer ação que usa a força física para machucar, ferir, causar dor ou colocar outra pessoa em perigo.</p>
+
+      <h2>Exemplos</h2>
+      <ul>
+        <li>bater, dar tapas, socos ou chutes;</li>
+        <li>empurrar uma pessoa com força;</li>
+        <li>puxar os cabelos;</li>
+        <li>dar beliscões;</li>
+        <li>apertar a pele com força;</li>
+        <li>queimar;</li>
+        <li>estrangular ou enforcar.</li>
+      </ul>
+
+      <div class="botoes-ajuda">
+        <button id="ir-numeros" class="botao-ajuda" type="button">Ver todos os números</button>
+        <button id="finalizar-pedido" class="botao-ajuda" type="button">Finalizar pedido</button>
+      </div>
+
+      <p class="rodape-ajuda">Protótipo escolar. Aponta para os canais oficiais e não guarda nenhum dado de quem acessa.</p>
+    </main>
+  </section>
+
+  <!-- TELA 5: Números. Lista os canais oficiais de ajuda (vêm da lista dados). -->
+  <section id="tela-numeros" class="tela-ajuda" hidden>
+    <button class="botao-sair" type="button" data-sair>Sair agora</button>
+    <main class="ajuda-conteudo">
+      <h1 id="titulo-numeros" tabindex="-1">Números de ajuda</h1>
+      <p>Se você estiver sofrendo violência, ligue para um destes números.</p>
+      <ul id="lista-servicos" class="lista-servicos"></ul>
+      <p class="rodape-ajuda">Protótipo escolar. Aponta para os canais oficiais e não guarda nenhum dado de quem acessa.</p>
+    </main>
+  </section>
+
+  <script>
+    /* ===== DADOS ===== */
+
+    // Tabela rede_de_protecao, copiada do dados.csv.
+    // Cada item é um registro (uma linha); nome, tipo, atende e contato são os campos.
+    // Só entram contatos oficiais já conferidos. O wireframe tinha mais números,
+    // mas eles só aparecem aqui depois de conferidos e colocados no dados.csv.
+    const dados = [
+      { nome: "Ligue 180 (Central de Atendimento à Mulher)", tipo: "telefone e WhatsApp", atende: "24 horas", contato: "180 / (61) 9610-0180" },
+      { nome: "190 (Polícia Militar)", tipo: "telefone", atende: "24 horas", contato: "190" }
+    ];
+
+    // Cardápio da pizzaria. É só informação da interface (o disfarce), não é o banco de dados.
+    // A pizza "Calabresa" tem ajuda: true, porque é a porta escondida para a ajuda.
+    const cardapio = [
+      { nome: "Calabresa", ingredientes: "Queijo, calabresa, orégano e cebola roxa", ajuda: true },
+      { nome: "Frango com Catupiry", ingredientes: "Queijo, peito de frango, catupiry, orégano e adicional de milho", ajuda: false },
+      { nome: "Quatro Queijos", ingredientes: "Muçarela, provolone, parmesão e catupiry", ajuda: false },
+      { nome: "Portuguesa", ingredientes: "Muçarela, presunto, ovos, cebola, azeitonas e orégano", ajuda: false }
+    ];
+
+    // Desenho de pizza em SVG (sem imagem da internet). É usado em todas as pizzas.
+    const desenhoPizza = `
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="46" fill="#e8b25c"/>
+        <circle cx="50" cy="50" r="38" fill="#f6d77a"/>
+        <circle cx="36" cy="38" r="7" fill="#c0392b"/>
+        <circle cx="64" cy="36" r="6" fill="#c0392b"/>
+        <circle cx="60" cy="64" r="7" fill="#c0392b"/>
+        <circle cx="35" cy="63" r="5" fill="#c0392b"/>
+        <path d="M44 51 q9 -11 18 0 q-9 11 -18 0z" fill="#2f6b35"/>
+      </svg>`;
+
+    /* ===== LÓGICA ===== */
+
+    // Busca todos os serviços de ajuda da tabela
+    // SELECT nome, tipo, atende, contato FROM rede_de_protecao
+    function buscarServicos() {
+      return dados;
+    }
+
+    // Decide o que acontece ao tocar numa pizza do cardápio
+    function escolherPizza(pizza) {
+      // SE a pizza é a porta da ajuda, ENTÃO abre a ajuda; SENÃO mostra a pizza normal
+      if (pizza.ajuda) {
+        mostrarAjuda();
+      } else {
+        mostrarPizza(pizza);
+      }
+    }
+
+    /* ===== TELAS ===== */
+
+    const telas = {
+      inicio: document.getElementById("tela-inicio"),
+      cardapio: document.getElementById("tela-cardapio"),
+      pizza: document.getElementById("tela-pizza"),
+      ajuda: document.getElementById("tela-ajuda"),
+      numeros: document.getElementById("tela-numeros")
+    };
+
+    // Esconde todas as telas e mostra só a escolhida, sempre no topo da página.
+    // A troca não muda o endereço nem o histórico: a ajuda não deixa rastro no navegador.
+    function mostrarTela(nome) {
+      for (const tela of Object.values(telas)) {
+        tela.hidden = true;
+      }
+      telas[nome].hidden = false;
+      window.scrollTo(0, 0);
+    }
+
+    function mostrarInicio() { mostrarTela("inicio"); }
+    function mostrarCardapio() { mostrarTela("cardapio"); }
+
+    // Mostra o detalhe de uma pizza normal (nome e ingredientes)
+    function mostrarPizza(pizza) {
+      document.getElementById("pizza-desenho").innerHTML = desenhoPizza;
+      document.getElementById("pizza-titulo").textContent = pizza.nome;
+      document.getElementById("pizza-texto").textContent = pizza.ingredientes;
+      mostrarTela("pizza");
+    }
+
+    function mostrarAjuda() {
+      mostrarTela("ajuda");
+      document.getElementById("titulo-ajuda").focus();
+    }
+
+    function mostrarNumeros() {
+      mostrarTela("numeros");
+      document.getElementById("titulo-numeros").focus();
+    }
+
+    // Monta um botão para cada pizza do cardápio
+    function montarCardapio() {
+      const lista = document.getElementById("lista-pizzas");
+      for (const pizza of cardapio) {
+        const item = document.createElement("li");
+
+        const botao = document.createElement("button");
+        botao.className = "pizza";
+        botao.type = "button";
+        botao.innerHTML = desenhoPizza +
+          '<div>' +
+          '<p class="pizza-nome">' + pizza.nome + '</p>' +
+          '<p class="pizza-ingredientes">' + pizza.ingredientes + '</p>' +
+          '</div>';
+        botao.addEventListener("click", function () { escolherPizza(pizza); });
+
+        item.append(botao);
+        lista.append(item);
+      }
+    }
+
+    // Monta um cartão para cada serviço de ajuda
+    function montarNumeros() {
+      const servicos = buscarServicos();
+      const lista = document.getElementById("lista-servicos");
+      for (const servico of servicos) {
+        const cartao = document.createElement("li");
+        cartao.className = "servico";
+
+        const nome = document.createElement("h2");
+        nome.textContent = servico.nome;
+
+        const contato = document.createElement("p");
+        contato.className = "contato";
+        contato.textContent = servico.contato;
+
+        const tipo = document.createElement("p");
+        tipo.textContent = "Tipo: " + servico.tipo;
+
+        const atende = document.createElement("p");
+        atende.textContent = "Atende: " + servico.atende;
+
+        cartao.append(nome, contato, tipo, atende);
+        lista.append(cartao);
+      }
+    }
+
+    // Botões da pizzaria
+    document.getElementById("ir-cardapio").addEventListener("click", mostrarCardapio);
+    document.getElementById("voltar-cardapio-1").addEventListener("click", mostrarCardapio);
+
+    // Botões de dentro da ajuda
+    document.getElementById("ir-numeros").addEventListener("click", mostrarNumeros);
+    document.getElementById("finalizar-pedido").addEventListener("click", mostrarInicio);
+
+    // "Sair agora": qualquer um dos botões volta na hora para a pizzaria
+    for (const botao of document.querySelectorAll("[data-sair]")) {
+      botao.addEventListener("click", mostrarInicio);
+    }
+
+    // Antes de sair da página, volta para o início.
+    // Assim os botões Voltar e Avançar do navegador nunca trazem a ajuda de volta.
+    window.addEventListener("pagehide", mostrarInicio);
+
+    montarCardapio();
+    montarNumeros();
+  </script>
+</body>
+</html>
