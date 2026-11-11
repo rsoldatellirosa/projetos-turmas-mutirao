@@ -86,14 +86,16 @@
     <h1>Compras para seu mercado</h1>
     <!-- Só o botão "Ver mercados": a tela de dados pessoais foi tirada (Regras do Estúdio) -->
     <button class="botao botao-destaque" onclick="irParaMercados()">Ver mercados</button>
-    <p class="rodape">Consciência financeira · Conhecimento · Tranquilidade<br>v0.1</p>
+    <p class="rodape">Consciência financeira · Conhecimento · Tranquilidade<br>v0.2</p>
   </section>
 
-  <!-- Tela 2: Digite sua cidade -->
+  <!-- Tela 2: Digite sua cidade (só mostra os mercados de lá; nada é guardado) -->
   <section id="tela-cidade" class="tela">
-    <h2>Digite sua cidade</h2>
-    <input id="campo-cidade" class="campo" placeholder="Ex.: São Marcos" oninput="mostrarMercados(this.value)">
-    <h2>Mercados</h2>
+    <h2>📍 Qual é a sua cidade?</h2>
+    <!-- Aviso de privacidade: o app NÃO guarda dados de quem usa (Regras do Estúdio) -->
+    <p class="subtitulo">Isso só mostra os mercados da sua cidade. O app não guarda nada sobre você.</p>
+    <input id="campo-cidade" class="campo" placeholder="Digite sua cidade. Ex.: São Marcos" oninput="mostrarMercados(this.value)">
+    <h2 id="titulo-mercados">Mercados</h2>
     <div id="lista-mercados"></div>
   </section>
 
@@ -127,15 +129,42 @@
 /* ===== DADOS =====
    Tabela "comida". Cada registro (linha) é um produto em um mercado.
    Campos (colunas): nome, parte, preco, mercado, cidade.
-   A fonte é o dados.csv do grupo. Como a tabela com mercado ainda
-   vai ser montada no /dados, aqui vão poucos dados de exemplo. */
+   A fonte é o dados.csv do grupo. Os dados abaixo são de EXEMPLO,
+   só para mostrar mais alimentos e mais partes do mercado;
+   trocar pelos dados de verdade no /dados. */
 const dados = [
-  // EXEMPLO: trocar pelos dados do grupo
-  { nome: "Arroz 5kg", parte: "Cereais", preco: 27.90, mercado: "Mercado São Jorge",  cidade: "São Marcos" },
-  // EXEMPLO: trocar pelos dados do grupo
-  { nome: "Arroz 5kg", parte: "Cereais", preco: 24.50, mercado: "Mercado Boa Compra", cidade: "São Marcos" },
-  // EXEMPLO: trocar pelos dados do grupo
-  { nome: "Leite 1L",  parte: "Bebidas", preco: 4.80,  mercado: "Mercado São Jorge",  cidade: "São Marcos" }
+  // Tudo aqui é EXEMPLO — trocar pela tabela do grupo (/dados)
+
+  // Açougue
+  { nome: "Bife bovino (kg)",   parte: "Açougue",    preco: 34.90, mercado: "Mercado São Jorge",  cidade: "São Marcos" },
+  { nome: "Bife bovino (kg)",   parte: "Açougue",    preco: 31.50, mercado: "Mercado Boa Compra", cidade: "São Marcos" },
+
+  // Padaria
+  { nome: "Pão francês (kg)",   parte: "Padaria",    preco: 14.90, mercado: "Mercado São Jorge",  cidade: "São Marcos" },
+  { nome: "Pão francês (kg)",   parte: "Padaria",    preco: 12.50, mercado: "Mercado Economia",   cidade: "São Marcos" },
+
+  // Hortifrúti
+  { nome: "Maçã (kg)",          parte: "Hortifrúti", preco: 8.90,  mercado: "Mercado Boa Compra", cidade: "São Marcos" },
+  { nome: "Maçã (kg)",          parte: "Hortifrúti", preco: 7.99,  mercado: "Mercado Economia",   cidade: "São Marcos" },
+  { nome: "Banana (kg)",        parte: "Hortifrúti", preco: 5.49,  mercado: "Mercado São Jorge",  cidade: "São Marcos" },
+  { nome: "Banana (kg)",        parte: "Hortifrúti", preco: 4.99,  mercado: "Mercado Boa Compra", cidade: "São Marcos" },
+
+  // Cereais
+  { nome: "Arroz 5kg",          parte: "Cereais",    preco: 27.90, mercado: "Mercado São Jorge",  cidade: "São Marcos" },
+  { nome: "Arroz 5kg",          parte: "Cereais",    preco: 24.50, mercado: "Mercado Boa Compra", cidade: "São Marcos" },
+  { nome: "Arroz 5kg",          parte: "Cereais",    preco: 25.90, mercado: "Mercado Economia",   cidade: "São Marcos" },
+  { nome: "Feijão 1kg",         parte: "Cereais",    preco: 8.49,  mercado: "Mercado São Jorge",  cidade: "São Marcos" },
+  { nome: "Feijão 1kg",         parte: "Cereais",    preco: 7.90,  mercado: "Mercado Economia",   cidade: "São Marcos" },
+
+  // Bebidas
+  { nome: "Leite 1L",           parte: "Bebidas",    preco: 4.80,  mercado: "Mercado São Jorge",  cidade: "São Marcos" },
+  { nome: "Leite 1L",           parte: "Bebidas",    preco: 4.49,  mercado: "Mercado Boa Compra", cidade: "São Marcos" },
+  { nome: "Suco de laranja 1L", parte: "Bebidas",    preco: 9.90,  mercado: "Mercado Boa Compra", cidade: "São Marcos" },
+  { nome: "Suco de laranja 1L", parte: "Bebidas",    preco: 8.75,  mercado: "Mercado Economia",   cidade: "São Marcos" },
+
+  // Extra
+  { nome: "Sabão em pó 1kg",    parte: "Extra",      preco: 15.90, mercado: "Mercado São Jorge",  cidade: "São Marcos" },
+  { nome: "Sabão em pó 1kg",    parte: "Extra",      preco: 13.99, mercado: "Mercado Economia",   cidade: "São Marcos" }
 ];
 
 /* ===== LÓGICA ===== */
@@ -173,6 +202,10 @@ function mostrarMercados(textoCidade){
       if (!jaTem) encontrados.push({ mercado: linha.mercado, cidade: linha.cidade });
     }
   });
+
+  // Atualiza o título mostrando quantos mercados apareceram
+  const titulo = document.getElementById("titulo-mercados");
+  titulo.textContent = encontrados.length ? "Mercados (" + encontrados.length + ")" : "Mercados";
 
   const lista = document.getElementById("lista-mercados");
   if (encontrados.length === 0){
