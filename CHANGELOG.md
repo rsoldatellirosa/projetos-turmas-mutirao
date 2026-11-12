@@ -14,9 +14,8 @@ Registro das últimas mudanças no site dos projetos. O endereço de cada app é
 
 ## Preparação para PWA
 
-- Kit para converter os apps publicados no site (manifesto, service worker e ícones), testado numa cópia do GameData: cumpriu os requisitos para instalar e abriu sem internet. Nenhum app do site foi convertido ainda; a conversão começa em aula.
-
-- Cada grupo do 8º ano ganhou o comando `/pwa` e um `servir.bat` (servidor local) para, em aula, transformar o app em PWA — instalável no celular — mantendo o duplo-clique offline.
+- Um só caminho para as duas turmas: um kit converte cada app na hora de publicar no site (manifesto, service worker e ícones). Testado em cópias dos apps: cumpriu os requisitos para instalar e abriu sem internet. Nenhum app do site foi convertido ainda; a conversão começa em aula.
+- O comando `/pwa` dos grupos do 8º ano foi desativado, para nenhum app ser convertido duas vezes. As pastas dos grupos continuam só com o `index.html`.
 - Guia `COMO-PUBLICAR.md` com o passo a passo de publicação e o mapa grupo → endereço.
 
 ## Em revisão
