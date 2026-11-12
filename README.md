@@ -12,6 +12,7 @@ disciplina são **Criatividade, Tecnologia e Pensamento Crítico**.
 | App | Turma | O que faz | Abrir |
 |---|---|---|---|
 | 🎮 **GameData** | 9º ano | Ranking de jogos: ver as melhores notas e abrir um jogo para ver nota e descrição | [abrir](https://rsoldatellirosa.github.io/projetos-turmas-mutirao/gamedata/) |
+| 🧴 **Perfumaria** | 9º ano | Conhecer perfumes antes de comprar, com catálogo e busca | [abrir](https://rsoldatellirosa.github.io/projetos-turmas-mutirao/perfumaria/) |
 | 🛒 **Compras para seu mercado** | 8º ano · Grupo TPAM | Comparar preços de produtos entre mercados | [abrir](https://rsoldatellirosa.github.io/projetos-turmas-mutirao/compras-no-seu-mercado/) |
 | 🎬 **CineMax** | 8º ano · Filmes e Séries | Buscar filmes e séries por nome, com gênero, plataforma e nota do Rotten Tomatoes | [abrir](https://rsoldatellirosa.github.io/projetos-turmas-mutirao/cinemax/) |
 
@@ -29,10 +30,14 @@ disciplina são **Criatividade, Tecnologia e Pensamento Crítico**.
 projetos-turmas-mutirao/
 ├── index.html                 Página inicial com a lista de apps
 ├── gamedata/                  App do 9º ano
-└── compras-no-seu-mercado/    App do 8º ano (Grupo TPAM)
+├── perfumaria/                App do 9º ano
+├── compras-no-seu-mercado/    App do 8º ano (Grupo TPAM)
+└── cinemax/                   App do 8º ano
 ```
 
 Cada pasta é um app pronto. A página inicial (`index.html`) junta todos em um só lugar.
+
+Mudanças recentes: [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
