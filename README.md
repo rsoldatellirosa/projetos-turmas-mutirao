@@ -13,6 +13,7 @@ disciplina são **Criatividade, Tecnologia e Pensamento Crítico**.
 |---|---|---|---|
 | 🎮 **GameData** | 9º ano | Ranking de jogos: ver as melhores notas e abrir um jogo para ver nota e descrição | [abrir](https://rsoldatellirosa.github.io/projetos-turmas-mutirao/gamedata/) |
 | 🛒 **Compras para seu mercado** | 8º ano · Grupo TPAM | Comparar preços de produtos entre mercados | [abrir](https://rsoldatellirosa.github.io/projetos-turmas-mutirao/compras-no-seu-mercado/) |
+| 🎬 **CineMax** | 8º ano · Filmes e Séries | Buscar filmes e séries por nome, com gênero, plataforma e nota do Rotten Tomatoes | [abrir](https://rsoldatellirosa.github.io/projetos-turmas-mutirao/cinemax/) |
 
 ## Como os apps funcionam
 
