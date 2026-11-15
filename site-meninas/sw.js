@@ -1,9 +1,9 @@
-// Service worker do La Pizzaiole. Guarda o app para abrir sem internet depois da 1a visita.
+// Service worker do Le Pizzaiole. Guarda o app para abrir sem internet depois da 1a visita.
 // Cache versionado: cada nova publicacao troca o nome e limpa o antigo.
 // Todos os apps do site dividem o mesmo endereco (origem) e o mesmo armazenamento:
 // cada app so mexe nos caches com o seu prefixo, para nao apagar o dos outros.
-const PREFIXO = "la-pizzaiole-";
-const CACHE = PREFIXO + "20261115-2017";
+const PREFIXO = "le-pizzaiole-";
+const CACHE = PREFIXO + "20261115-2023";
 const ARQUIVOS = ["./", "./index.html", "./manifest.webmanifest",
   "./icone-192.png", "./icone-512.png", "./icone-maskable-512.png"];
 
