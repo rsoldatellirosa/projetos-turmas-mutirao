@@ -20,6 +20,7 @@ disciplina são **Criatividade, Tecnologia e Pensamento Crítico**.
 
 - Cada app é **um único arquivo `index.html`**, com tudo dentro (HTML, CSS e JavaScript).
 - **Funciona sem internet**: abre direto no navegador, por duplo clique ou pen drive.
+- **Instalável no celular (PWA)**: aberto pelo site, o app pode ir para a tela inicial e depois abre sem internet.
 - **Nada de fora**: sem CDN, bibliotecas ou imagens por link. Dados ficam dentro do próprio arquivo.
 - **Não guarda nada de quem usa**: sem cadastro, sem login, sem coletar dados pessoais.
 - Código em **português**, pensado para os alunos lerem e entenderem o que a IA fez.

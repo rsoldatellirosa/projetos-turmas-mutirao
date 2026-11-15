@@ -2,6 +2,10 @@
 
 Registro das últimas mudanças no site dos projetos. O endereço de cada app é fixo; republicar um app no mesmo endereço atualiza o que o QR Code dos alunos mostra, sem precisar gerar QR novo.
 
+## 2026-11-15
+
+- **PWA:** GameData, Perfumaria, Compras para seu mercado e CineMax agora podem ser instalados no celular (Android pelo Chrome, iPhone pelo Safari) e abrem sem internet depois da primeira visita. Cada app ganhou `manifest.webmanifest`, `sw.js` e ícones na própria pasta; o `index.html` continua abrindo por duplo clique.
+
 ## 2026-11-12
 
 - **CineMax (`cinemax/`):** publicada a versão v0.2 — 24 títulos com gênero, plataforma marcada como "(a definir)" onde falta, busca por nome, filtro por gênero e uma tela de carregamento. Antes estava no ar uma versão sem essa tela.
@@ -14,7 +18,7 @@ Registro das últimas mudanças no site dos projetos. O endereço de cada app é
 
 ## Preparação para PWA
 
-- Um só caminho para as duas turmas: um kit converte cada app na hora de publicar no site (manifesto, service worker e ícones). Testado em cópias dos apps: cumpriu os requisitos para instalar e abriu sem internet. Nenhum app do site foi convertido ainda; a conversão começa em aula.
+- Um só caminho para as duas turmas: um kit converte cada app na hora de publicar no site (manifesto, service worker e ícones). Testado em cópias dos apps: cumpriu os requisitos para instalar e abriu sem internet. Aplicado em 15/11. A cada nova versão publicada, o kit roda de novo para o app continuar instalável.
 - O comando `/pwa` dos grupos do 8º ano foi desativado, para nenhum app ser convertido duas vezes. As pastas dos grupos continuam só com o `index.html`.
 - Guia `COMO-PUBLICAR.md` com o passo a passo de publicação e o mapa grupo → endereço.
 

@@ -5,12 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Compras para seu mercado</title>
 <!-- Deixa o app com ícone e tela cheia quando "adicionar à tela inicial" no celular -->
-<meta name="theme-color" content="#5ec6ff">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Compras">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='110' fill='%235ec6ff'/><path d='M100 140h44l54 210h150l40-140H168' fill='none' stroke='%23141414' stroke-width='26' stroke-linecap='round' stroke-linejoin='round'/><circle cx='214' cy='396' r='24' fill='%23141414'/><circle cx='356' cy='396' r='24' fill='%23141414'/></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='110' fill='%235ec6ff'/><path d='M100 140h44l54 210h150l40-140H168' fill='none' stroke='%23141414' stroke-width='26' stroke-linecap='round' stroke-linejoin='round'/><circle cx='214' cy='396' r='24' fill='%23141414'/><circle cx='356' cy='396' r='24' fill='%23141414'/></svg>">
 <style>
   /* Cores do grupo: principal PRETO, destaque AZUL CLARO, fundo BRANCO */
   :root{
@@ -74,6 +69,14 @@
   .vazio{ color:#888; text-align:center; margin:30px 0; }
   .rodape{ text-align:center; color:#9aa4ab; font-size:13px; margin-top:34px; }
 </style>
+  <!-- PWA:head:inicio (gerado pelo pwa-kit, nao editar a mao) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#5ec6ff">
+  <link rel="apple-touch-icon" href="icone-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Compras">
+  <!-- PWA:head:fim -->
 </head>
 <body>
 <div class="app">
@@ -309,5 +312,16 @@ function compararProduto(nome){
   });
 }
 </script>
+  <!-- PWA:registro:inicio (gerado pelo pwa-kit, nao editar a mao) -->
+  <script>
+    // Registra o service worker SO quando o app esta hospedado (http/https).
+    // Aberto por duplo clique (file://) ele nao roda, e o app continua funcionando.
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+  </script>
+  <!-- PWA:registro:fim -->
 </body>
 </html>

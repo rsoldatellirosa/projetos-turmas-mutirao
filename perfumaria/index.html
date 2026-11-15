@@ -118,6 +118,14 @@
     /* Esconde a tela que não está em uso */
     .escondida{ display: none; }
   </style>
+  <!-- PWA:head:inicio (gerado pelo pwa-kit, nao editar a mao) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#355c66">
+  <link rel="apple-touch-icon" href="icone-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Perfumaria">
+  <!-- PWA:head:fim -->
 </head>
 <body>
 
@@ -285,5 +293,16 @@
     mostrarColecao();
   </script>
 
+  <!-- PWA:registro:inicio (gerado pelo pwa-kit, nao editar a mao) -->
+  <script>
+    // Registra o service worker SO quando o app esta hospedado (http/https).
+    // Aberto por duplo clique (file://) ele nao roda, e o app continua funcionando.
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+  </script>
+  <!-- PWA:registro:fim -->
 </body>
 </html>

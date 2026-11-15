@@ -7,15 +7,10 @@
 
   <!-- Deixa o app com cara de aplicativo quando a pessoa "Adicionar à tela inicial".
        Tudo embutido no arquivo, continua funcionando sem internet. -->
-  <meta name="theme-color" content="#0f0f0f">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="CineMax">
   <meta name="application-name" content="CineMax">
   <!-- ícone do app (um SVG desenhado aqui mesmo, guardado em base64) -->
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9Ijk2IiBmaWxsPSIjMGYwZjBmIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIxNTAiIGZpbGw9IiNlMjNiM2IiLz48cGF0aCBkPSJNMjIyIDE4OCBMMzMyIDI1NiBMMjIyIDMyNCBaIiBmaWxsPSIjZmZmZmZmIi8+PC9zdmc+">
-  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9Ijk2IiBmaWxsPSIjMGYwZjBmIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIxNTAiIGZpbGw9IiNlMjNiM2IiLz48cGF0aCBkPSJNMjIyIDE4OCBMMzMyIDI1NiBMMjIyIDMyNCBaIiBmaWxsPSIjZmZmZmZmIi8+PC9zdmc+">
   <!--
     CineMax · app para ajudar a escolher o que assistir.
     Grupo Filmes e Séries · 8º ano.
@@ -283,6 +278,14 @@
 
     .oculto{ display: none; }
   </style>
+  <!-- PWA:head:inicio (gerado pelo pwa-kit, nao editar a mao) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0f0f0f">
+  <link rel="apple-touch-icon" href="icone-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="CineMax">
+  <!-- PWA:head:fim -->
 </head>
 <body>
   <!-- ===== TELA DE CARREGAMENTO · some sozinha depois de alguns segundos ===== -->
@@ -572,5 +575,16 @@
 
     iniciar();
   </script>
+  <!-- PWA:registro:inicio (gerado pelo pwa-kit, nao editar a mao) -->
+  <script>
+    // Registra o service worker SO quando o app esta hospedado (http/https).
+    // Aberto por duplo clique (file://) ele nao roda, e o app continua funcionando.
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+  </script>
+  <!-- PWA:registro:fim -->
 </body>
 </html>

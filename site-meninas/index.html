@@ -6,10 +6,6 @@
   <!-- Protótipo escolar: pede aos buscadores para NÃO indexar nem seguir esta página -->
   <meta name="robots" content="noindex, nofollow">
   <!-- Faz o site abrir como um app quando a pessoa usa "Adicionar à tela de início" -->
-  <meta name="theme-color" content="#b3261e">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="La Pizzaiole">
   <!-- Ícone da pizzaria, desenhado aqui mesmo (sem imagem da internet) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23e8b25c'/><circle cx='50' cy='50' r='38' fill='%23f6d77a'/><circle cx='38' cy='40' r='7' fill='%23c0392b'/><circle cx='62' cy='38' r='6' fill='%23c0392b'/><circle cx='58' cy='62' r='7' fill='%23c0392b'/></svg>">
   <!-- O título da aba é sempre o da pizzaria, mesmo quando a ajuda está aberta -->
@@ -191,6 +187,14 @@
       text-align: center;
     }
   </style>
+  <!-- PWA:head:inicio (gerado pelo pwa-kit, nao editar a mao) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#b3261e">
+  <link rel="apple-touch-icon" href="icone-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="La Pizzaiole">
+  <!-- PWA:head:fim -->
 </head>
 <body>
 
@@ -435,5 +439,16 @@
     montarCardapio();
     montarNumeros();
   </script>
+  <!-- PWA:registro:inicio (gerado pelo pwa-kit, nao editar a mao) -->
+  <script>
+    // Registra o service worker SO quando o app esta hospedado (http/https).
+    // Aberto por duplo clique (file://) ele nao roda, e o app continua funcionando.
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+  </script>
+  <!-- PWA:registro:fim -->
 </body>
 </html>
