@@ -15,6 +15,7 @@ disciplina são **Criatividade, Tecnologia e Pensamento Crítico**.
 | 🧴 **Perfumaria** | 9º ano | Conhecer perfumes antes de comprar, com catálogo e busca | [abrir](https://rsoldatellirosa.github.io/projetos-turmas-mutirao/perfumaria/) |
 | 🛒 **Compras para seu mercado** | 8º ano · Grupo TPAM | Comparar preços de produtos entre mercados | [abrir](https://rsoldatellirosa.github.io/projetos-turmas-mutirao/compras-no-seu-mercado/) |
 | 🎬 **CineMax** | 8º ano · Filmes e Séries | Buscar filmes e séries por nome, com gênero, plataforma e nota do Rotten Tomatoes | [abrir](https://rsoldatellirosa.github.io/projetos-turmas-mutirao/cinemax/) |
+| 🌧️ **Alerta de Alagamento** | 7º ano · Turma 72 | Previsão de chuva, leituras do pluviômetro da escola, alertas e plano de resposta. Instala no celular | [abrir](https://rsoldatellirosa.github.io/projetos-turmas-mutirao/alerta-alagamento/) |
 
 ## Como os apps funcionam
 
@@ -25,6 +26,8 @@ disciplina são **Criatividade, Tecnologia e Pensamento Crítico**.
 - **Não guarda nada de quem usa**: sem cadastro, sem login, sem coletar dados pessoais.
 - Código em **português**, pensado para os alunos lerem e entenderem o que a IA fez.
 
+> **Exceção:** o 🌧️ **Alerta de Alagamento** usa dados ao vivo (previsão do tempo e planilha do pluviômetro), porque um alerta precisa disso. Sem internet, ele abre e mostra os últimos dados salvos. Detalhes em [`alerta-alagamento/LEIA-ME.md`](alerta-alagamento/LEIA-ME.md).
+
 ## Organização
 
 ```
@@ -33,7 +36,8 @@ projetos-turmas-mutirao/
 ├── gamedata/                  App do 9º ano
 ├── perfumaria/                App do 9º ano
 ├── compras-no-seu-mercado/    App do 8º ano (Grupo TPAM)
-└── cinemax/                   App do 8º ano
+├── cinemax/                   App do 8º ano
+└── alerta-alagamento/         App do 7º ano (PWA, dados ao vivo)
 ```
 
 Cada pasta é um app pronto. A página inicial (`index.html`) junta todos em um só lugar.

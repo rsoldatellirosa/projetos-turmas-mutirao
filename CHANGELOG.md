@@ -5,6 +5,8 @@ Registro das últimas mudanças no site dos projetos. O endereço de cada app é
 ## 2026-11-15
 
 - **PWA:** GameData, Perfumaria, Compras para seu mercado e CineMax agora podem ser instalados no celular (Android pelo Chrome, iPhone pelo Safari) e abrem sem internet depois da primeira visita. Cada app ganhou `manifest.webmanifest`, `sw.js` e ícones na própria pasta; o `index.html` continua abrindo por duplo clique.
+- **Alerta de Alagamento (`alerta-alagamento/`):** publicado o app do 7º ano (Turma 72), já instalável, no mesmo padrão do kit (manifesto, `sw.js` com prefixo próprio de cache e ícones na pasta). Mostra a previsão, as leituras do pluviômetro, os alertas e o plano de resposta. Os dados vêm ao vivo do Open-Meteo e de uma planilha pública que não tem o nome dos alunos.
+- **README e página inicial:** Alerta de Alagamento entrou na lista, com a exceção da regra "funciona sem internet" explicada.
 
 ## 2026-11-12
 

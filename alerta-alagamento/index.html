@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Alerta de Alagamento · Mutirão</title>
+<meta name="description" content="App do Projeto Alerta de Alagamento da Turma 72 do Colégio Mutirão de São Marcos: previsão de chuva, leituras do pluviômetro, alertas e plano de resposta.">
+<meta name="theme-color" content="#1B3A6B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icone-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Alerta">
+<style>
+  /* ============================================================
+     APARÊNCIA
+     Cores da escola: azul #1B3A6B e laranja #F08A1D.
+     ============================================================ */
+  :root {
+    --azul: #1B3A6B;
+    --azul-2: #1A3F8F;
+    --laranja: #F08A1D;
+    --agua: #2F80ED;
+    --agua-clara: #CFE2FF;
+    --fundo: #EDF1F7;
+    --cartao: #FFFFFF;
+    --texto: #14213A;
+    --suave: #5A6A84;
+    --linha: #DCE3EE;
+    --ok: #1E9E5A;
+    --ok-fundo: #E3F6EC;
+    --atencao: #C98A00;
+    --atencao-fundo: #FFF4D6;
+    --alerta: #D33A2C;
+    --alerta-fundo: #FDE6E3;
+    --sombra: 0 1px 2px rgba(20, 33, 58, .06), 0 4px 14px rgba(20, 33, 58, .06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fundo: #0D1525;
+      --cartao: #16213A;
+      --texto: #E6ECF7;
+      --suave: #9AABC8;
+      --linha: #263452;
+      --agua-clara: #1D3560;
+      --ok-fundo: #12352A;
+      --atencao-fundo: #3A3013;
+      --alerta-fundo: #431C1A;
+      --sombra: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--fundo);
+    color: var(--texto);
+    font-size: 16px;
+    line-height: 1.45;
+    -webkit-tap-highlight-color: transparent;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---------- topo ---------- */
+  header.topo {
+    background: var(--azul);
+    color: #fff;
+    padding: calc(14px + env(safe-area-inset-top)) 16px 16px;
+    position: sticky; top: 0; z-index: 5;
+  }
+  .topo-linha { display: flex; align-items: center; gap: 12px; max-width: 640px; margin: 0 auto; }
+  .topo-icone { width: 38px; height: 38px; flex: none; }
+  .topo h1 { font-size: 1.12rem; margin: 0; line-height: 1.15; letter-spacing: -.01em; }
+  .topo small { display: block; font-size: .78rem; opacity: .8; font-weight: 500; }
+  .topo-acoes { margin-left: auto; display: flex; gap: 6px; }
+  .botao-topo {
+    background: rgba(255,255,255,.12); border: 0; color: #fff; border-radius: 10px;
+    width: 40px; height: 40px; display: grid; place-items: center; cursor: pointer;
+  }
+  .botao-topo svg { width: 20px; height: 20px; }
+  .botao-topo.girando svg { animation: gira 1s linear infinite; }
+  @keyframes gira { to { transform: rotate(360deg); } }
+
+  main { max-width: 640px; margin: 0 auto; padding: 14px 16px 8px; }
+  section.aba { display: none; }
+  section.aba.ativa { display: block; animation: entra .18s ease-out; }
+  @keyframes entra { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  h2 { font-size: 1.05rem; margin: 22px 2px 10px; color: var(--texto); letter-spacing: -.01em; }
+  h2:first-child { margin-top: 4px; }
+  .cartao {
+    background: var(--cartao); border-radius: 16px; padding: 16px;
+    box-shadow: var(--sombra); margin-bottom: 12px; border: 1px solid var(--linha);
+  }
+  .suave { color: var(--suave); }
+  .pequeno { font-size: .86rem; }
+  .nota { font-size: .84rem; color: var(--suave); margin: 8px 2px 0; }
+
+  /* ---------- recado do professor ---------- */
+  .recado {
+    background: var(--laranja); color: #2B1700; font-weight: 600; border-radius: 12px;
+    padding: 10px 14px; margin-bottom: 12px; font-size: .95rem;
+  }
+
+  /* ---------- semáforo (aba Agora) ---------- */
+  .status {
+    border-radius: 20px; padding: 16px; display: grid; grid-template-columns: 116px 1fr;
+    gap: 14px; align-items: center; margin-bottom: 12px; border: 2px solid transparent;
+  }
+  .status.ok      { background: var(--ok-fundo);      border-color: color-mix(in srgb, var(--ok) 35%, transparent); }
+  .status.atencao { background: var(--atencao-fundo); border-color: color-mix(in srgb, var(--atencao) 45%, transparent); }
+  .status.alerta  { background: var(--alerta-fundo);  border-color: var(--alerta); }
+  .status.vazio   { background: var(--cartao); border-color: var(--linha); }
+  .status-selo {
+    display: inline-flex; align-items: center; gap: 6px; font-size: .74rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .06em; padding: 4px 10px; border-radius: 99px; color: #fff;
+  }
+  .ok .status-selo { background: var(--ok); }
+  .atencao .status-selo { background: var(--atencao); }
+  .alerta .status-selo { background: var(--alerta); }
+  .vazio .status-selo { background: var(--suave); }
+  .status-titulo { font-size: 1.45rem; font-weight: 800; line-height: 1.1; margin: 8px 0 4px; letter-spacing: -.02em; }
+  .status-texto { font-size: .93rem; }
+  .garrafa svg { width: 100%; height: auto; display: block; }
+  .agua-nivel { transition: y .8s ease, height .8s ease; }
+
+  .mensagem-turma {
+    background: var(--cartao); border-left: 4px solid var(--alerta); border-radius: 10px;
+    padding: 10px 12px; margin-top: 10px; font-weight: 600; font-size: .93rem;
+  }
+
+  .grade-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .info { margin-bottom: 0; }
+  .info-rotulo { font-size: .78rem; color: var(--suave); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .info-valor { font-size: 1.6rem; font-weight: 800; line-height: 1.15; margin-top: 4px; letter-spacing: -.02em; }
+  .info-valor small { font-size: .9rem; font-weight: 700; }
+  .info-extra { font-size: .82rem; color: var(--suave); margin-top: 2px; }
+
+  .botao {
+    display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+    background: var(--azul-2); color: #fff; border: 0; border-radius: 14px; padding: 14px 16px;
+    font-size: 1rem; font-weight: 700; text-decoration: none; cursor: pointer; margin: 12px 0;
+  }
+  .botao svg { width: 20px; height: 20px; }
+  .botao.secundario { background: transparent; color: var(--azul-2); border: 2px solid var(--azul-2); }
+  @media (prefers-color-scheme: dark) { .botao.secundario { color: #9DB8F2; border-color: #9DB8F2; } }
+
+  .atualizado { text-align: center; font-size: .8rem; color: var(--suave); margin: 6px 0 0; }
+  .offline {
+    background: #2B3A55; color: #fff; text-align: center; font-size: .85rem;
+    padding: 8px 12px; border-radius: 10px; margin-bottom: 12px; display: none;
+  }
+  .offline.visivel { display: block; }
+
+  /* ---------- previsão ---------- */
+  .grafico svg { width: 100%; height: auto; display: block; }
+  .lista { list-style: none; margin: 0; padding: 0; }
+  .lista li {
+    display: flex; align-items: center; gap: 12px; padding: 11px 2px; border-bottom: 1px solid var(--linha);
+  }
+  .lista li:last-child { border-bottom: 0; }
+  .lista .dia { width: 74px; flex: none; }
+  .lista .dia b { display: block; text-transform: capitalize; }
+  .lista .dia span { font-size: .8rem; color: var(--suave); }
+  .lista .meio { flex: 1; min-width: 0; }
+  .lista .valor { font-weight: 800; font-size: 1.1rem; text-align: right; white-space: nowrap; }
+  .chip { display: inline-block; font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+  .chip.ok { background: var(--ok-fundo); color: var(--ok); }
+  .chip.atencao { background: var(--atencao-fundo); color: var(--atencao); }
+  .chip.alerta { background: var(--alerta); color: #fff; }
+  .chip.conferir { background: var(--atencao-fundo); color: var(--atencao); }
+  .barrinha { height: 6px; border-radius: 99px; background: var(--linha); margin-top: 6px; overflow: hidden; }
+  .barrinha i { display: block; height: 100%; background: var(--agua); border-radius: 99px; }
+
+  /* ---------- números rápidos ---------- */
+  .resumo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+  .resumo div { background: var(--cartao); border: 1px solid var(--linha); border-radius: 14px; padding: 10px 6px; text-align: center; }
+  .resumo b { display: block; font-size: 1.3rem; line-height: 1.1; }
+  .resumo span { font-size: .72rem; color: var(--suave); line-height: 1.2; display: block; margin-top: 3px; }
+
+  /* ---------- tabelas ---------- */
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th { text-align: left; font-size: .76rem; text-transform: uppercase; letter-spacing: .04em; color: var(--suave); padding: 6px 8px; border-bottom: 2px solid var(--linha); }
+  td { padding: 9px 8px; border-bottom: 1px solid var(--linha); }
+  tr.destaque td { background: color-mix(in srgb, var(--laranja) 16%, transparent); font-weight: 700; }
+  tr:last-child td { border-bottom: 0; }
+
+  /* ---------- plano de resposta ---------- */
+  .passos { list-style: none; margin: 0; padding: 0; counter-reset: passo; }
+  .passos li {
+    counter-increment: passo; position: relative; padding: 12px 12px 12px 54px;
+    background: var(--cartao); border: 1px solid var(--linha); border-radius: 14px; margin-bottom: 8px;
+  }
+  .passos li::before {
+    content: counter(passo); position: absolute; left: 12px; top: 12px; width: 30px; height: 30px;
+    border-radius: 50%; background: var(--laranja); color: #2B1700; font-weight: 800; display: grid; place-items: center;
+  }
+  .passos .quem { font-size: .82rem; color: var(--suave); margin-top: 2px; }
+  .vazio-caixa {
+    border: 2px dashed var(--linha); border-radius: 14px; padding: 16px; color: var(--suave); text-align: center; font-size: .93rem;
+  }
+
+  .ciclo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; }
+  .ciclo div { background: var(--fundo); border-radius: 12px; padding: 10px 4px; }
+  .ciclo b { display: block; font-size: .9rem; }
+  .ciclo span { font-size: .72rem; color: var(--suave); display: block; line-height: 1.25; margin-top: 2px; }
+  .ciclo .emoji { font-size: 1.3rem; display: block; }
+  .frase { font-weight: 800; color: var(--azul-2); text-align: center; margin: 12px 0 2px; }
+  @media (prefers-color-scheme: dark) { .frase { color: #9DB8F2; } }
+
+  /* ---------- menu de baixo ---------- */
+  nav.menu {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+    background: var(--cartao); border-top: 1px solid var(--linha);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+  }
+  nav.menu .itens { display: grid; grid-template-columns: repeat(5, 1fr); max-width: 640px; margin: 0 auto; }
+  nav.menu button {
+    background: none; border: 0; color: var(--suave); display: flex; flex-direction: column; align-items: center;
+    gap: 2px; padding: 6px 0; font-size: .7rem; font-weight: 700; cursor: pointer; border-radius: 12px; font-family: inherit;
+  }
+  nav.menu button svg { width: 24px; height: 24px; }
+  nav.menu button.ativo { color: var(--azul-2); background: color-mix(in srgb, var(--azul-2) 10%, transparent); }
+  @media (prefers-color-scheme: dark) { nav.menu button.ativo { color: #9DB8F2; } }
+  nav.menu .ponto { position: relative; }
+  nav.menu .ponto::after {
+    content: ""; position: absolute; top: -1px; right: -3px; width: 9px; height: 9px; border-radius: 50%;
+    background: var(--alerta); border: 2px solid var(--cartao); display: none;
+  }
+  nav.menu .ponto.ligado::after { display: block; }
+
+  @media (max-width: 370px) {
+    .status { grid-template-columns: 96px 1fr; }
+    .status-titulo { font-size: 1.25rem; }
+    .resumo b { font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="topo-linha">
+    <svg class="topo-icone" viewBox="0 0 48 48" aria-hidden="true">
+      <rect width="48" height="48" rx="12" fill="#ffffff" fill-opacity=".14"/>
+      <path d="M24 9c-6 8-10 13.3-10 18.5a10 10 0 0 0 20 0C34 22.3 30 17 24 9z" fill="#fff"/>
+      <rect x="10" y="33" width="28" height="3" rx="1.5" fill="#F08A1D"/>
+    </svg>
+    <div>
+      <h1>Alerta de Alagamento</h1>
+      <small id="topoTurma">Colégio Mutirão · Turma 72</small>
+    </div>
+    <div class="topo-acoes">
+      <button class="botao-topo" id="btAtualizar" aria-label="Atualizar dados">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="offline" id="avisoOffline">Sem internet agora. Mostrando os últimos dados salvos.</div>
+  <div class="recado" id="recado" hidden></div>
+
+  <!-- ===================== ABA: AGORA ===================== -->
+  <section class="aba ativa" id="aba-agora">
+    <div class="status vazio" id="status">
+      <div class="garrafa" id="garrafa"></div>
+      <div>
+        <span class="status-selo" id="statusSelo">Carregando</span>
+        <div class="status-titulo" id="statusTitulo">Buscando a previsão...</div>
+        <div class="status-texto" id="statusTexto"></div>
+      </div>
+    </div>
+    <div id="mensagemTurma"></div>
+
+    <div class="grade-2">
+      <div class="cartao info">
+        <div class="info-rotulo">Nosso limite</div>
+        <div class="info-valor num" id="infoLimite">--</div>
+        <div class="info-extra" id="infoLimiteStatus"></div>
+      </div>
+      <div class="cartao info">
+        <div class="info-rotulo">Último registro</div>
+        <div class="info-valor num" id="infoUltima">--</div>
+        <div class="info-extra" id="infoUltimaData">pluviômetro da escola</div>
+      </div>
+    </div>
+
+    <a class="botao" id="btRegistrar1" target="_blank" rel="noopener" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      Registrar a leitura de hoje
+    </a>
+    <p class="atualizado" id="atualizado"></p>
+  </section>
+
+  <!-- ===================== ABA: PREVISÃO ===================== -->
+  <section class="aba" id="aba-previsao">
+    <h2>Chuva prevista para os próximos 7 dias</h2>
+    <div class="cartao grafico" id="graficoPrevisao"></div>
+    <div class="cartao"><ul class="lista" id="listaPrevisao"></ul></div>
+    <p class="nota">A previsão vem do Open-Meteo e pode errar. Por isso o plano de resposta vale mesmo quando o alerta não toca.</p>
+  </section>
+
+  <!-- ===================== ABA: LEITURAS ===================== -->
+  <section class="aba" id="aba-leituras">
+    <h2>O que o nosso pluviômetro mediu</h2>
+    <div class="resumo" id="resumoLeituras"></div>
+    <div class="cartao grafico" id="graficoLeituras" hidden></div>
+    <div class="cartao"><ul class="lista" id="listaLeituras"></ul></div>
+    <a class="botao" id="btRegistrar2" target="_blank" rel="noopener" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      Registrar uma leitura
+    </a>
+    <p class="nota">Quando aparece "conferir", o registro tem alguma coisa estranha, como "choveu" com 0 mm. Na dúvida, escreva nas observações do formulário.</p>
+  </section>
+
+  <!-- ===================== ABA: ALERTAS ===================== -->
+  <section class="aba" id="aba-alertas">
+    <h2>Alertas enviados</h2>
+    <div id="listaAlertas"></div>
+
+    <h2 id="tituloTeria">Se o nosso alerta já existisse</h2>
+    <div class="cartao" id="teriaTocado"><span class="suave">Calculando com o histórico de chuva...</span></div>
+
+    <h2>Como o limite muda o alerta</h2>
+    <div class="cartao">
+      <p class="pequeno suave" style="margin:0 0 8px" id="textoTabela">Quantas vezes o alerta teria tocado com cada limite.</p>
+      <table class="num" id="tabelaLimite"><tbody><tr><td class="suave">Calculando...</td></tr></tbody></table>
+    </div>
+
+    <h2>Os dias mais chuvosos desde 2015</h2>
+    <div class="cartao"><table class="num" id="tabelaRecordes"><tbody><tr><td class="suave">Calculando...</td></tr></tbody></table></div>
+    <p class="nota">Esse registro é da região de São Marcos, como uma média de uma área grande. Uma chuva muito forte bem em cima da escola aparece menor nele. Por isso o pluviômetro da escola é importante.</p>
+  </section>
+
+  <!-- ===================== ABA: PLANO ===================== -->
+  <section class="aba" id="aba-plano">
+    <h2>Quando o alerta tocar</h2>
+    <div id="listaPlano"></div>
+
+    <h2>O projeto</h2>
+    <div class="cartao">
+      <div class="ciclo">
+        <div><span class="emoji">📏</span><b>Medir</b><span>pluviômetro da escola</span></div>
+        <div><span class="emoji">🌦️</span><b>Prever</b><span>previsão do tempo</span></div>
+        <div><span class="emoji">📣</span><b>Avisar</b><span>e-mail para a direção</span></div>
+        <div><span class="emoji">🧰</span><b>Agir</b><span>plano de resposta</span></div>
+      </div>
+      <p class="frase">Tecnologia não segura água. Ela compra tempo.</p>
+      <p class="pequeno suave" style="text-align:center;margin:4px 0 0">O subsolo da escola já alagou com chuvas fortes. No último alagamento, choveram cerca de 140 mm em 7 horas e a água subiu 30 cm.</p>
+    </div>
+
+    <h2>Como ler o pluviômetro</h2>
+    <div class="cartao">
+      <p style="margin:0 0 10px">Nosso pluviômetro tem a mesma largura em cima e embaixo. Por isso, a altura da água na régua já é a chuva:</p>
+      <p style="margin:0 0 10px;font-weight:800;font-size:1.1rem;text-align:center">1 cm de água = 10 mm de chuva</p>
+      <table class="num">
+        <thead><tr><th>Na régua</th><th>Chuva</th></tr></thead>
+        <tbody>
+          <tr><td>0,5 cm</td><td>5 mm</td></tr>
+          <tr><td>1 cm</td><td>10 mm</td></tr>
+          <tr><td>2 cm</td><td>20 mm</td></tr>
+          <tr><td>3 cm</td><td>30 mm</td></tr>
+          <tr><td>5 cm</td><td>50 mm</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Alerta oficial da Defesa Civil</h2>
+    <div class="cartao">
+      Mande o <b>CEP</b> da sua casa por SMS para o número <b>40199</b>. É grátis, e a Defesa Civil avisa quando tem risco de chuva forte na sua região. O nosso alerta é da escola. Esse é para a sua casa.
+    </div>
+
+    <div id="caixaInstalar" hidden>
+      <h2>Instalar no celular</h2>
+      <div class="cartao">
+        <button class="botao" id="btInstalar" hidden>Instalar o app</button>
+        <p class="pequeno" style="margin:0" id="textoInstalar">
+          <b>Android:</b> no Chrome, toque em ⋮ e depois em "Instalar app" ou "Adicionar à tela inicial".<br>
+          <b>iPhone:</b> no Safari, toque em Compartilhar e depois em "Adicionar à Tela de Início".
+        </p>
+      </div>
+    </div>
+
+    <p class="nota" style="text-align:center;margin-top:18px" id="creditos">
+      Feito pela Turma 72 do Colégio Mutirão de São Marcos, no Laboratório de Criação e Inovação.<br>
+      Previsão e histórico de chuva: Open-Meteo. Leituras: pluviômetro da escola.<br>
+      Este app não coleta nem guarda dados de quem usa.
+    </p>
+  </section>
+</main>
+
+<nav class="menu" aria-label="Menu">
+  <div class="itens">
+    <button data-aba="agora" class="ativo">
+      <span class="ponto" id="pontoAgora"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-4 5.2-6.5 8.6-6.5 12a6.5 6.5 0 0 0 13 0C18.5 11.6 16 8.2 12 3z"/></svg></span>
+      Agora
+    </button>
+    <button data-aba="previsao">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.5 4.5 0 0 1-.5-9A6 6 0 0 1 18 8a4 4 0 0 1 0 8H7z"/><path d="M8 21l1-2M12 21l1-2M16 21l1-2"/></svg>
+      Previsão
+    </button>
+    <button data-aba="leituras">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8M9 3v4l-2 2v11a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V9l-2-2V3"/><path d="M7 14h10"/></svg>
+      Leituras
+    </button>
+    <button data-aba="alertas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+      Alertas
+    </button>
+    <button data-aba="plano">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M16 5h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"/><path d="M9 12l2 2 4-4"/></svg>
+      Plano
+    </button>
+  </div>
+</nav>
+
+<script>
+/* =================================================================
+   APP DO ALERTA DE ALAGAMENTO · Turma 72 · Colégio Mutirão
+   O código está dividido em três camadas, como nos outros apps:
+     DADOS  = de onde vêm as informações
+     LÓGICA = as regras (SE a chuva passar do limite, ENTÃO alerta)
+     TELAS  = o que aparece para quem usa
+   ================================================================= */
+
+/* ======================== DADOS ======================== */
+
+// Planilha pública do projeto. O professor muda o limite, a mensagem
+// e o plano de resposta direto nela, e o app atualiza sozinho.
+const PLANILHA_ID = "1cfykOBxn91zBA88B_K0J2-7m13GJ7wJ8gfmhyU8Xnek";
+
+// Onde fica a escola (usado na previsão do tempo).
+const LATITUDE = -28.9711;
+const LONGITUDE = -51.0681;
+
+// Valores usados se a planilha não responder.
+const CONFIG_PADRAO = {
+  limite_mm: 50,
+  limite_status: "provisório",
+  mensagem: "Atenção: risco de alagamento no subsolo. Protejam livros e equipamentos.",
+  formulario: "",
+  turma: "Turma 72 · 7º ano",
+  aviso: ""
+};
+
+// Limites mostrados na tabela "Como o limite muda o alerta".
+const LIMITES_TABELA = [20, 30, 40, 50, 60, 80, 100];
+
+// Guarda a última resposta de cada fonte para o app funcionar sem internet.
+const memoria = {
+  ler(chave) { try { return JSON.parse(localStorage.getItem("alerta_" + chave)); } catch (e) { return null; } },
+  salvar(chave, valor) { try { localStorage.setItem("alerta_" + chave, JSON.stringify(valor)); } catch (e) {} }
+};
+
+// Lê uma aba da planilha do Google. Usa o "truque do script" (JSONP),
+// que funciona em qualquer site sem precisar de servidor.
+let contadorPedidos = 0;
+function lerAba(nomeDaAba) {
+  return new Promise((resolve, reject) => {
+    const nomeRetorno = "__aba" + (++contadorPedidos);
+    const script = document.createElement("script");
+    const tempo = setTimeout(() => terminar(new Error("A planilha demorou para responder")), 12000);
+    function terminar(erro, resposta) {
+      clearTimeout(tempo);
+      delete window[nomeRetorno];
+      script.remove();
+      if (erro) reject(erro); else resolve(resposta);
+    }
+    window[nomeRetorno] = (resposta) => {
+      if (!resposta || resposta.status === "error") return terminar(new Error("Planilha sem acesso"));
+      terminar(null, linhasDaResposta(resposta));
+    };
+    script.onerror = () => terminar(new Error("Sem conexão com a planilha"));
+    script.src = "https://docs.google.com/spreadsheets/d/" + PLANILHA_ID +
+      "/gviz/tq?headers=1&sheet=" + encodeURIComponent(nomeDaAba) +
+      "&tqx=out:json;responseHandler:" + nomeRetorno + "&_=" + Date.now();
+    document.head.appendChild(script);
+  });
+}
+
+// Transforma a resposta da planilha numa lista de linhas simples.
+// Datas chegam como "Date(2026,10,12)": o mês começa no zero!
+function linhasDaResposta(resposta) {
+  return (resposta.table.rows || []).map(linha => (linha.c || []).map(celula => {
+    if (!celula || celula.v === null || celula.v === undefined) return null;
+    if (typeof celula.v === "string") {
+      const d = /^Date\((\d+),(\d+),(\d+)/.exec(celula.v);
+      if (d) return new Date(+d[1], +d[2], +d[3]);
+    }
+    return celula.v;
+  }));
+}
+
+// Busca dados de um site (previsão e histórico do Open-Meteo).
+async function buscarJSON(url) {
+  const controle = new AbortController();
+  const tempo = setTimeout(() => controle.abort(), 15000);
+  try {
+    const r = await fetch(url, { signal: controle.signal });
+    if (!r.ok) throw new Error("Resposta " + r.status);
+    return await r.json();
+  } finally { clearTimeout(tempo); }
+}
+
+function urlPrevisao() {
+  return "https://api.open-meteo.com/v1/forecast?latitude=" + LATITUDE + "&longitude=" + LONGITUDE +
+    "&daily=precipitation_sum,precipitation_probability_max&timezone=America%2FSao_Paulo&forecast_days=7";
+}
+function urlHistorico() {
+  const fim = new Date(); fim.setDate(fim.getDate() - 7);   // o histórico tem uns dias de atraso
+  return "https://archive-api.open-meteo.com/v1/archive?latitude=" + LATITUDE + "&longitude=" + LONGITUDE +
+    "&start_date=2015-01-01&end_date=" + dataISO(fim) +
+    "&daily=precipitation_sum&timezone=America%2FSao_Paulo";
+}
+
+/* ======================== LÓGICA ======================== */
+
+// A REGRA DO ALERTA, a mesma do jogo "Vocês são o alerta":
+// SE a chuva prevista PASSAR do limite, ENTÃO alerta.
+// Antes disso, a partir de 60% do limite, o app pede atenção.
+function nivelDaChuva(mm, limite) {
+  if (mm == null) return "vazio";
+  if (mm > limite) return "alerta";
+  if (mm >= limite * 0.6) return "atencao";
+  return "ok";
+}
+const PESO = { vazio: 0, ok: 1, atencao: 2, alerta: 3 };
+
+// Lê a aba Config (chave | valor) e junta com os valores padrão.
+function montarConfig(linhas) {
+  const config = { ...CONFIG_PADRAO };
+  (linhas || []).forEach(([chave, valor]) => {
+    if (!chave) return;
+    chave = String(chave).trim();
+    if (valor === null || valor === undefined) valor = "";
+    config[chave] = typeof valor === "string" ? valor.trim() : valor;
+  });
+  const limite = parseFloat(String(config.limite_mm).replace(",", "."));
+  config.limite_mm = isFinite(limite) && limite > 0 ? limite : CONFIG_PADRAO.limite_mm;
+  return config;
+}
+
+// Organiza as leituras do pluviômetro (Data | Choveu | mm), da mais nova para a mais antiga.
+function organizarLeituras(linhas) {
+  return (linhas || [])
+    .map(([data, choveu, mm]) => ({
+      data: data instanceof Date ? data : null,
+      choveu: choveu ? String(choveu).trim() : "",
+      mm: mm === null || mm === "" ? null : parseFloat(String(mm).replace(",", "."))
+    }))
+    .filter(l => l.data)
+    .sort((a, b) => b.data - a.data);
+}
+
+// Um registro é "para conferir" quando as duas respostas não combinam.
+function precisaConferir(l) {
+  const disseQueSim = /^s/i.test(l.choveu);
+  const disseQueNao = /^n/i.test(l.choveu);
+  if (disseQueSim && l.mm === 0) return "choveu, mas 0 mm?";
+  if (disseQueNao && l.mm > 0) return "não choveu, mas " + fmt(l.mm) + " mm?";
+  return "";
+}
+
+// Lê a resposta da previsão do Open-Meteo.
+function organizarPrevisao(json) {
+  const d = json && json.daily;
+  if (!d || !d.time) return [];
+  return d.time.map((t, i) => ({
+    data: deISO(t),
+    mm: d.precipitation_sum[i],
+    chance: d.precipitation_probability_max ? d.precipitation_probability_max[i] : null
+  }));
+}
+
+// A partir de 11+ anos de chuva diária, calcula tudo o que a aba Alertas mostra.
+// Guarda só o resultado (pequeno), não os milhares de dias.
+function resumirHistorico(json) {
+  const d = json && json.daily;
+  if (!d || !d.time) return null;
+  const dias = [];
+  d.time.forEach((t, i) => { if (d.precipitation_sum[i] != null) dias.push({ t, mm: d.precipitation_sum[i] }); });
+  const anoAtual = new Date().getFullYear();
+  const completos = dias.filter(x => +x.t.slice(0, 4) < anoAtual);
+  const anos = anoAtual - 2015;
+  const todosLimites = Array.from({ length: 151 }, (_, i) => i);   // de 0 a 150 mm, para qualquer limite da turma
+  const contagem = todosLimites.map(lim => completos.filter(x => x.mm > lim).length);
+  const recordes = [...dias].sort((a, b) => b.mm - a.mm).slice(0, 5);
+  const desteAno = dias.filter(x => +x.t.slice(0, 4) === anoAtual);
+  return {
+    anos, anoAtual, contagem,
+    recordes,
+    desteAno: desteAno.filter(x => x.mm >= 10),     // dias de chuva forte do ano (para recalcular com qualquer limite)
+    ate: dias.length ? dias[dias.length - 1].t : null
+  };
+}
+// Quantos dias passaram do limite (limites quebrados, como 47,5, usam o número inteiro de baixo).
+function vezesComLimite(hist, limite) {
+  return hist.contagem[Math.max(0, Math.min(150, Math.floor(limite)))];
+}
+// Traduz "quantas vezes em N anos" para palavras, sem conta para o aluno fazer.
+function emPalavras(total, anos) {
+  if (!total) return "nenhuma vez";
+  const porAno = total / anos;
+  if (porAno >= 45) return "quase toda semana";
+  if (porAno >= 18) return "umas " + Math.round(porAno / 12) + " vezes por mês";
+  if (porAno >= 10) return "mais ou menos 1 vez por mês";
+  if (porAno >= 1.5) return "umas " + Math.round(porAno) + " vezes por ano";
+  if (porAno >= 0.75) return "mais ou menos 1 vez por ano";
+  return "1 vez a cada " + Math.round(1 / porAno) + " anos";
+}
+
+// Pequenas ajudas com datas e números.
+const DIAS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+const DIAS_CURTOS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+function deISO(t) { const [a, m, d] = t.split("-").map(Number); return new Date(a, m - 1, d); }
+function dataISO(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function ddmm(d) { return String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0"); }
+function ddmmaaaa(d) { return ddmm(d) + "/" + d.getFullYear(); }
+function mesmoDia(a, b) { return a && b && a.toDateString() === b.toDateString(); }
+function nomeDoDia(d) {
+  const hoje = new Date(); const amanha = new Date(); amanha.setDate(hoje.getDate() + 1);
+  if (mesmoDia(d, hoje)) return "hoje";
+  if (mesmoDia(d, amanha)) return "amanhã";
+  return DIAS[d.getDay()];
+}
+function fmt(n) { return n == null ? "--" : Number(n).toLocaleString("pt-BR", { maximumFractionDigits: 1 }); }
+function hora(ms) { const d = new Date(ms); return ddmm(d) + " às " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+/* ======================== TELAS ======================== */
+
+const $ = id => document.getElementById(id);
+const estado = {
+  config: { ...CONFIG_PADRAO },
+  previsao: [], leituras: [], plano: [], alertas: [], historico: null,
+  quando: null
+};
+
+// --- Troca de abas no menu de baixo ---
+document.querySelectorAll("nav.menu button").forEach(botao => {
+  botao.addEventListener("click", () => abrirAba(botao.dataset.aba));
+});
+function abrirAba(nome) {
+  document.querySelectorAll("nav.menu button").forEach(b => b.classList.toggle("ativo", b.dataset.aba === nome));
+  document.querySelectorAll("section.aba").forEach(s => s.classList.toggle("ativa", s.id === "aba-" + nome));
+  window.scrollTo({ top: 0 });
+  try { history.replaceState(null, "", "#" + nome); } catch (e) {}
+}
+
+// --- A garrafa: um pluviômetro desenhado com a chuva prevista e a linha do limite ---
+function desenharGarrafa(mm, limite, nivel) {
+  const topo = 46, base = 236, altura = base - topo;
+  const maximo = Math.max(limite * 1.3, (mm || 0) * 1.1, 10);
+  const yDe = v => base - altura * Math.min(v, maximo) / maximo;
+  const yAgua = yDe(mm || 0), yLimite = yDe(limite);
+  const corAgua = nivel === "alerta" ? "#E5534B" : "#2F80ED";
+  return `
+  <svg viewBox="0 0 150 250" role="img" aria-label="Chuva prevista ${fmt(mm)} milímetros. Limite ${fmt(limite)} milímetros.">
+    <defs><clipPath id="corpo"><rect x="28" y="${topo}" width="80" height="${altura}" rx="12"/></clipPath></defs>
+    <path d="M14 22 H122 L102 ${topo} H34 Z" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="28" y="${topo}" width="80" height="${altura}" rx="12" fill="currentColor" fill-opacity=".05"/>
+    <g clip-path="url(#corpo)">
+      <rect class="agua-nivel" x="28" y="${yAgua}" width="80" height="${base - yAgua}" fill="${corAgua}" fill-opacity=".85"/>
+      <rect x="28" y="${yAgua}" width="80" height="4" fill="#fff" fill-opacity=".35"/>
+    </g>
+    <rect x="28" y="${topo}" width="80" height="${altura}" rx="12" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="3"/>
+    <line x1="22" x2="114" y1="${yLimite}" y2="${yLimite}" stroke="#F08A1D" stroke-width="3" stroke-dasharray="6 4"/>
+    <text x="118" y="${yLimite + 4}" font-size="12" font-weight="800" fill="#F08A1D">${fmt(limite)}</text>
+    ${base - yAgua > 34
+      ? `<text x="68" y="${yAgua + 24}" text-anchor="middle" font-size="17" font-weight="800" fill="#fff">${fmt(mm)} mm</text>`
+      : `<text x="68" y="${yAgua - 8}" text-anchor="middle" font-size="17" font-weight="800" fill="currentColor">${fmt(mm)} mm</text>`}
+  </svg>`;
+}
+
+// --- Aba Agora ---
+function telaAgora() {
+  const c = estado.config, lim = c.limite_mm;
+  $("topoTurma").textContent = "Colégio Mutirão · " + (c.turma || CONFIG_PADRAO.turma);
+  $("recado").hidden = !c.aviso; $("recado").textContent = c.aviso || "";
+
+  // Pior caso entre hoje e amanhã: é o que o alerta automático olha de manhã.
+  const proximos = estado.previsao.slice(0, 2);
+  let escolhido = null, nivel = "vazio";
+  proximos.forEach(dia => {
+    const n = nivelDaChuva(dia.mm, lim);
+    if (!escolhido || PESO[n] > PESO[nivel]) { escolhido = dia; nivel = n; }
+  });
+
+  const caixa = $("status");
+  caixa.className = "status " + nivel;
+  const quando = escolhido ? nomeDoDia(escolhido.data) : "";
+  const outros = proximos.map(d => (nomeDoDia(d.data) === "hoje" ? "Hoje" : "Amanhã") + ": " + fmt(d.mm) + " mm").join(" · ");
+  const textos = {
+    vazio:   ["Sem dados", "Sem previsão agora", "Não deu para buscar a previsão. Toque em atualizar quando tiver internet."],
+    ok:      ["Tudo certo", "Sem alerta", "A chuva prevista está bem abaixo do nosso limite."],
+    atencao: ["Fique de olho", "Chuva chegando perto", `A chuva prevista para ${quando} está chegando perto do limite.`],
+    alerta:  ["Alerta", "Alerta de chuva forte", `A chuva prevista para ${quando} passa do nosso limite. Hora de seguir o plano de resposta.`]
+  }[nivel];
+  $("statusSelo").textContent = textos[0];
+  $("statusTitulo").textContent = textos[1];
+  $("statusTexto").innerHTML = esc(textos[2]) + (outros ? `<div class="pequeno suave num" style="margin-top:6px">${esc(outros)}</div>` : "");
+  $("garrafa").innerHTML = escolhido ? desenharGarrafa(escolhido.mm, lim, nivel) + `<div class="pequeno suave" style="text-align:center;text-transform:capitalize">${esc(quando)}</div>` : desenharGarrafa(0, lim, "vazio");
+  $("mensagemTurma").innerHTML = nivel === "alerta" && c.mensagem
+    ? `<div class="mensagem-turma">📣 ${esc(c.mensagem)}</div>` : "";
+  document.getElementById("pontoAgora").classList.toggle("ligado", nivel === "alerta");
+
+  $("infoLimite").innerHTML = fmt(lim) + " <small>mm</small>";
+  $("infoLimiteStatus").textContent = c.limite_status ? c.limite_status : "";
+
+  const ultima = estado.leituras[0];
+  if (ultima) {
+    $("infoUltima").innerHTML = fmt(ultima.mm) + " <small>mm</small>";
+    $("infoUltimaData").textContent = nomeDoDia(ultima.data) === "hoje" ? "hoje" : ddmm(ultima.data) + ", " + DIAS[ultima.data.getDay()];
+  } else {
+    $("infoUltima").textContent = "--";
+    $("infoUltimaData").textContent = "pluviômetro da escola";
+  }
+
+  ["btRegistrar1", "btRegistrar2"].forEach(id => {
+    const b = $(id);
+    if (c.formulario && /^https:\/\//.test(c.formulario)) { b.href = c.formulario; b.hidden = false; } else b.hidden = true;
+  });
+  $("atualizado").textContent = estado.quando ? "Atualizado em " + hora(estado.quando) : "";
+}
+
+// --- Aba Previsão ---
+function telaPrevisao() {
+  const lim = estado.config.limite_mm, dias = estado.previsao;
+  if (!dias.length) {
+    $("graficoPrevisao").innerHTML = `<p class="suave" style="margin:0">Previsão indisponível agora.</p>`;
+    $("listaPrevisao").innerHTML = "";
+    return;
+  }
+  // Gráfico de barras com a linha do limite
+  const L = 340, A = 210, topo = 18, base = 160, esq = 8;
+  const maximo = Math.max(lim * 1.2, ...dias.map(d => d.mm || 0)) * 1.08;
+  const larg = (L - esq * 2) / dias.length;
+  const y = v => base - (base - topo) * (v || 0) / maximo;
+  const cores = { ok: "#2F80ED", atencao: "#E0A800", alerta: "#D33A2C", vazio: "#9AABC8" };
+  let barras = "";
+  dias.forEach((d, i) => {
+    const x = esq + i * larg + larg * 0.18, w = larg * 0.64, n = nivelDaChuva(d.mm, lim);
+    const altura = Math.max(base - y(d.mm), d.mm > 0 ? 3 : 0);
+    barras += `<rect x="${x}" y="${base - altura}" width="${w}" height="${altura}" rx="6" fill="${cores[n]}"/>
+      <text x="${x + w / 2}" y="${base - altura - 6}" text-anchor="middle" font-size="12" font-weight="800" fill="currentColor">${fmt(d.mm)}</text>
+      <text x="${x + w / 2}" y="${base + 18}" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">${i === 0 ? "hoje" : DIAS_CURTOS[d.data.getDay()]}</text>
+      <text x="${x + w / 2}" y="${base + 33}" text-anchor="middle" font-size="10.5" fill="currentColor" fill-opacity=".6">${ddmm(d.data)}</text>
+      <text x="${x + w / 2}" y="${base + 48}" text-anchor="middle" font-size="10.5" fill="currentColor" fill-opacity=".6">${d.chance == null ? "" : d.chance + "%"}</text>`;
+  });
+  $("graficoPrevisao").innerHTML = `
+    <svg viewBox="0 0 ${L} ${A}" role="img" aria-label="Gráfico da chuva prevista nos próximos 7 dias">
+      <line x1="0" x2="${L}" y1="${base}" y2="${base}" stroke="currentColor" stroke-opacity=".2"/>
+      ${barras}
+      <line x1="0" x2="${L}" y1="${y(lim)}" y2="${y(lim)}" stroke="#F08A1D" stroke-width="2.5" stroke-dasharray="6 4"/>
+      <text x="${L - 2}" y="${y(lim) - 5}" text-anchor="end" font-size="11" font-weight="800" fill="#F08A1D">limite ${fmt(lim)} mm</text>
+    </svg>
+    <p class="pequeno suave" style="margin:6px 0 0">Números em cima das barras: mm de chuva. Embaixo: a chance de chover.</p>`;
+
+  $("listaPrevisao").innerHTML = dias.map(d => {
+    const n = nivelDaChuva(d.mm, lim);
+    const rotulo = { ok: "sem alerta", atencao: "fique de olho", alerta: "ALERTA", vazio: "" }[n];
+    const pct = Math.min(100, 100 * (d.mm || 0) / lim);
+    return `<li>
+      <div class="dia"><b>${esc(nomeDoDia(d.data))}</b><span>${ddmm(d.data)}</span></div>
+      <div class="meio"><span class="chip ${n}">${rotulo}</span>
+        <span class="pequeno suave"> ${d.chance == null ? "" : d.chance + "% de chance"}</span>
+        <div class="barrinha"><i style="width:${pct}%;${n === "alerta" ? "background:var(--alerta)" : ""}"></i></div></div>
+      <div class="valor num">${fmt(d.mm)} mm</div>
+    </li>`;
+  }).join("");
+}
+
+// --- Aba Leituras ---
+function telaLeituras() {
+  const ls = estado.leituras;
+  const comValor = ls.filter(l => l.mm != null);
+  const choveu = comValor.filter(l => l.mm > 0);
+  const maior = comValor.reduce((m, l) => Math.max(m, l.mm), 0);
+  const total = comValor.reduce((s, l) => s + l.mm, 0);
+  $("resumoLeituras").innerHTML = `
+    <div><b class="num">${ls.length}</b><span>leituras</span></div>
+    <div><b class="num">${choveu.length}</b><span>dias com chuva</span></div>
+    <div><b class="num">${fmt(maior)}</b><span>maior (mm)</span></div>
+    <div><b class="num">${fmt(total)}</b><span>total (mm)</span></div>`;
+
+  if (!ls.length) {
+    $("listaLeituras").innerHTML = `<li class="suave">Ainda não há leituras para mostrar.</li>`;
+    $("graficoLeituras").hidden = true;
+    return;
+  }
+  $("listaLeituras").innerHTML = ls.map(l => {
+    const conferir = precisaConferir(l);
+    return `<li>
+      <div class="dia"><b>${ddmm(l.data)}</b><span>${DIAS_CURTOS[l.data.getDay()]}</span></div>
+      <div class="meio pequeno">${l.choveu ? "Choveu? " + esc(l.choveu) : ""}
+        ${conferir ? `<br><span class="chip conferir">conferir: ${esc(conferir)}</span>` : ""}</div>
+      <div class="valor num">${fmt(l.mm)} mm</div>
+    </li>`;
+  }).join("");
+
+  // Gráfico das últimas leituras (da mais antiga para a mais nova)
+  const ultimas = ls.slice(0, 14).reverse();
+  if (ultimas.length >= 2) {
+    const L = 340, base = 120, topo = 16;
+    const maximo = Math.max(10, ...ultimas.map(l => l.mm || 0)) * 1.1;
+    const larg = L / ultimas.length;
+    const barras = ultimas.map((l, i) => {
+      const h = Math.max((base - topo) * (l.mm || 0) / maximo, l.mm > 0 ? 3 : 1.5);
+      const x = i * larg + larg * 0.2, w = larg * 0.6;
+      return `<rect x="${x}" y="${base - h}" width="${w}" height="${h}" rx="4" fill="#2F80ED"/>
+        ${ultimas.length <= 10 ? `<text x="${x + w / 2}" y="${base + 15}" text-anchor="middle" font-size="10.5" fill="currentColor" fill-opacity=".65">${ddmm(l.data)}</text>` : ""}`;
+    }).join("");
+    $("graficoLeituras").innerHTML = `<svg viewBox="0 0 ${L} ${base + 22}" role="img" aria-label="Gráfico das últimas leituras">
+      <line x1="0" x2="${L}" y1="${base}" y2="${base}" stroke="currentColor" stroke-opacity=".2"/>${barras}</svg>
+      <p class="pequeno suave" style="margin:6px 0 0">Últimas ${ultimas.length} leituras, em mm.</p>`;
+    $("graficoLeituras").hidden = false;
+  } else {
+    $("graficoLeituras").hidden = true;
+  }
+}
+
+// --- Aba Alertas ---
+function telaAlertas() {
+  const lim = estado.config.limite_mm;
+  // Alertas enviados de verdade (o alerta automático escreve na aba "Alertas" da planilha)
+  const enviados = estado.alertas.filter(a => a[0] instanceof Date).sort((a, b) => b[0] - a[0]);
+  $("listaAlertas").innerHTML = enviados.length
+    ? `<div class="cartao"><ul class="lista">${enviados.map(a => `<li>
+        <div class="dia"><b>${ddmm(a[0])}</b><span>${a[0].getFullYear()}</span></div>
+        <div class="meio pequeno">${esc(a[3] || "alerta enviado")}<br><span class="suave">limite ${fmt(a[2])} mm</span></div>
+        <div class="valor num">${fmt(a[1])} mm</div></li>`).join("")}</ul></div>`
+    : `<div class="vazio-caixa">Nenhum alerta enviado ainda.<br>Quando o alerta automático estiver ligado, ele vai conferir a previsão toda manhã, e cada aviso enviado aparece aqui.</div>`;
+
+  const h = estado.historico;
+  if (!h) return;
+  // Se o alerta existisse desde janeiro
+  const dias = h.desteAno.filter(x => x.mm > lim).sort((a, b) => a.t < b.t ? -1 : 1);
+  $("tituloTeria").textContent = "Se o nosso alerta existisse em " + h.anoAtual;
+  $("teriaTocado").innerHTML = dias.length
+    ? `<p style="margin:0 0 8px">Com o limite de <b>${fmt(lim)} mm</b>, o alerta teria tocado <b>${dias.length} ${dias.length === 1 ? "vez" : "vezes"}</b> em ${h.anoAtual}:</p>
+       <ul class="lista">${dias.map(x => { const d = deISO(x.t); return `<li><div class="dia"><b>${ddmm(d)}</b><span>${DIAS_CURTOS[d.getDay()]}</span></div><div class="meio"></div><div class="valor num">${fmt(x.mm)} mm</div></li>`; }).join("")}</ul>`
+    : `<p style="margin:0">Com o limite de <b>${fmt(lim)} mm</b>, o alerta não teria tocado nenhuma vez em ${h.anoAtual} (até ${h.ate ? ddmm(deISO(h.ate)) : "agora"}).</p>`;
+
+  // Tabela do limite (a mesma que a turma usou na folha)
+  const anoFim = h.anoAtual - 1;
+  $("textoTabela").textContent = `Quantas vezes o alerta teria tocado com cada limite, de 2015 a ${anoFim} (${h.anos} anos).`;
+  const limites = [...new Set([...LIMITES_TABELA, lim])].sort((a, b) => a - b);
+  $("tabelaLimite").innerHTML = `<thead><tr><th>Limite</th><th>Vezes</th><th>Mais ou menos</th></tr></thead><tbody>` +
+    limites.map(l => { const v = vezesComLimite(h, l); return `<tr class="${l === lim ? "destaque" : ""}"><td>${fmt(l)} mm${l === lim ? " ← nosso" : ""}</td><td>${v}</td><td>${emPalavras(v, h.anos)}</td></tr>`; }).join("") + `</tbody>`;
+  $("tabelaRecordes").innerHTML = `<thead><tr><th>Dia</th><th>Chuva</th></tr></thead><tbody>` +
+    h.recordes.map(x => `<tr><td>${ddmmaaaa(deISO(x.t))}</td><td>${fmt(x.mm)} mm</td></tr>`).join("") + `</tbody>`;
+}
+
+// --- Aba Plano ---
+function telaPlano() {
+  const passos = estado.plano.filter(p => p[1]).sort((a, b) => (+a[0] || 999) - (+b[0] || 999));
+  $("listaPlano").innerHTML = passos.length
+    ? `<ol class="passos">${passos.map(p => `<li><b>${esc(p[1])}</b>${p[2] ? `<div class="quem">Quem faz: ${esc(p[2])}</div>` : ""}</li>`).join("")}</ol>`
+    : `<div class="vazio-caixa">A turma vai montar este plano nas próximas aulas: o que sobe primeiro, quem faz o quê, e o cuidado com a saída de emergência da sala 101 e com os ralos.</div>`;
+  $("creditos").innerHTML = `Feito pela ${esc(estado.config.turma || CONFIG_PADRAO.turma)} do Colégio Mutirão de São Marcos, no Laboratório de Criação e Inovação.<br>
+    Previsão e histórico de chuva: Open-Meteo. Leituras: pluviômetro da escola.<br>Este app não coleta nem guarda dados de quem usa.`;
+}
+
+function desenharTudo() { telaAgora(); telaPrevisao(); telaLeituras(); telaAlertas(); telaPlano(); }
+
+/* ============ BUSCAR OS DADOS (com memória para ficar sem internet) ============ */
+
+function carregarDaMemoria() {
+  const salvo = memoria.ler("dados");
+  if (salvo) {
+    estado.config = montarConfig(salvo.config);
+    estado.leituras = organizarLeituras((salvo.leituras || []).map(r => [r[0] ? new Date(r[0]) : null, r[1], r[2]]));
+    estado.previsao = organizarPrevisao(salvo.previsao);
+    estado.plano = salvo.plano || [];
+    estado.alertas = (salvo.alertas || []).map(r => [r[0] ? new Date(r[0]) : null, r[1], r[2], r[3]]);
+    estado.quando = salvo.quando || null;
+  }
+  const hist = memoria.ler("historico");
+  if (hist && hist.resumo) estado.historico = hist.resumo;
+}
+
+async function atualizar() {
+  const botao = $("btAtualizar");
+  botao.classList.add("girando");
+  const salvo = memoria.ler("dados") || {};
+  const tarefas = {
+    config:   lerAba("Config"),
+    leituras: lerAba("Leituras"),
+    plano:    lerAba("Plano"),
+    alertas:  lerAba("Alertas"),
+    previsao: buscarJSON(urlPrevisao())
+  };
+  const nomes = Object.keys(tarefas);
+  const resultados = await Promise.allSettled(Object.values(tarefas));
+  let algumaDeuCerto = false;
+  resultados.forEach((r, i) => {
+    if (r.status === "fulfilled") { salvo[nomes[i]] = r.value; algumaDeuCerto = true; }
+  });
+  if (algumaDeuCerto) salvo.quando = Date.now();
+  memoria.salvar("dados", salvo);
+  carregarDaMemoria();
+  desenharTudo();
+
+  // O histórico é grande: busca no máximo uma vez por dia.
+  const hist = memoria.ler("historico");
+  const hoje = dataISO(new Date());
+  if (!hist || hist.dia !== hoje) {
+    try {
+      const resumo = resumirHistorico(await buscarJSON(urlHistorico()));
+      if (resumo) { memoria.salvar("historico", { dia: hoje, resumo }); estado.historico = resumo; telaAlertas(); }
+    } catch (e) { /* fica com o que já tinha */ }
+  }
+  botao.classList.remove("girando");
+  $("avisoOffline").classList.toggle("visivel", !navigator.onLine || !algumaDeuCerto);
+}
+
+$("btAtualizar").addEventListener("click", atualizar);
+window.addEventListener("online", atualizar);
+window.addEventListener("offline", () => $("avisoOffline").classList.add("visivel"));
+
+/* ======================== INSTALAR (PWA) ======================== */
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+let pedidoInstalar = null;
+const jaInstalado = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+if (!jaInstalado) $("caixaInstalar").hidden = false;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault(); pedidoInstalar = e; $("btInstalar").hidden = false;
+});
+$("btInstalar").addEventListener("click", async () => {
+  if (!pedidoInstalar) return;
+  pedidoInstalar.prompt(); await pedidoInstalar.userChoice; pedidoInstalar = null; $("btInstalar").hidden = true;
+});
+
+/* ======================== COMEÇAR ======================== */
+carregarDaMemoria();
+desenharTudo();
+const abaInicial = (location.hash || "").slice(1);
+if (["agora", "previsao", "leituras", "alertas", "plano"].includes(abaInicial)) abrirAba(abaInicial);
+atualizar();
+</script>
+</body>
+</html>
