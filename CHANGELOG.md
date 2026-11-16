@@ -24,6 +24,6 @@ Registro das últimas mudanças no site dos projetos. O endereço de cada app é
 - O comando `/pwa` dos grupos do 8º ano foi desativado, para nenhum app ser convertido duas vezes. As pastas dos grupos continuam só com o `index.html`.
 - Guia `COMO-PUBLICAR.md` com o passo a passo de publicação e o mapa grupo → endereço.
 
-## Em revisão
+## Conteúdo em revisão
 
-- **Fertility (`fertility/`):** no ar apenas com títulos "(a conferir)", sem dados. O conteúdo de saúde está pendente de conferência em fonte oficial, e a publicação do app na internet está em revisão (a regra do grupo é mantê-lo só na escola).
+- **Fertility (`fertility/`):** instalável no celular desde 15/11. Por decisão do professor, segue publicado fora da lista da página inicial. O conteúdo de saúde continua marcado como “a conferir” e aguarda revisão em fonte oficial.
