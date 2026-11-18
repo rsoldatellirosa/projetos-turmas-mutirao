@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GameData · Ranking de Jogos</title>
 <style>
-  /* As cores ainda estão "____" no CLAUDE.md do grupo. Estas são provisórias.
-     Troque os valores aqui quando o grupo decidir as cores. */
+  /* Paleta escura (pedido do grupo na v0.2). Troque os valores aqui para mudar as cores. */
   :root {
-    --cor-principal: #2b2d6e;   /* principal: ____ (provisório) */
-    --cor-destaque:  #f5a623;   /* destaque:  ____ (provisório) */
-    --cor-fundo:     #f4f4f8;   /* fundo:     ____ (provisório) */
-    --cor-cartao:    #ffffff;
-    --cor-texto:     #1d1d28;
+    --cor-principal:   #2a2d5a;   /* faixa do topo e botões (azul escuro) */
+    --cor-destaque:    #ffb23e;   /* nota e números do ranking (âmbar) */
+    --cor-fundo:       #0f1018;   /* fundo da tela (quase preto) */
+    --cor-cartao:      #1b1d2e;   /* fundo dos cartões (cinza escuro) */
+    --cor-texto:       #eceef5;   /* texto principal (claro) */
+    --cor-texto-sec:   #9aa0b5;   /* texto secundário (cinza claro) */
+    --cor-borda:       rgba(255,255,255,.08);
   }
 
   * { box-sizing: border-box; }
@@ -25,12 +26,17 @@
     color: var(--cor-texto);
   }
 
+  /* Animações de entrada (pedido do grupo na v0.2) */
+  @keyframes descer   { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes aparecer { from { opacity: 0; transform: translateY(12px);  } to { opacity: 1; transform: translateY(0); } }
+
   /* Faixa do topo */
   header {
     background: var(--cor-principal);
     color: #fff;
     padding: 18px 16px;
     text-align: center;
+    animation: descer .5s ease both;
   }
   header h1 { margin: 0; font-size: 1.4rem; }
   header p  { margin: 4px 0 0; font-size: .9rem; opacity: .85; }
@@ -50,29 +56,29 @@
     width: 100%;
     text-align: left;
     background: var(--cor-cartao);
-    border: none;
+    border: 1px solid var(--cor-borda);
     border-radius: 12px;
-    padding: 14px;
+    padding: 12px;
     margin-bottom: 10px;
     cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0,0,0,.12);
     font-size: 1rem;
     color: var(--cor-texto);
+    animation: aparecer .45s ease both;
   }
-  .item-jogo:hover { box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+  .item-jogo:hover { border-color: var(--cor-destaque); }
 
   /* A posição no ranking (1, 2, 3...) */
   .posicao {
     font-size: 1.2rem;
     font-weight: bold;
-    color: var(--cor-principal);
-    min-width: 28px;
+    color: var(--cor-destaque);
+    min-width: 24px;
     text-align: center;
   }
 
   .info-item { flex: 1; }
   .info-item .nome   { font-weight: 600; }
-  .info-item .genero { font-size: .85rem; color: #666; }
+  .info-item .genero { font-size: .85rem; color: var(--cor-texto-sec); }
 
   /* A nota em destaque */
   .nota {
@@ -84,21 +90,51 @@
     font-size: 1.05rem;
   }
 
+  /* Capa (foto) do jogo */
+  .capa {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .capa-mini {
+    width: 46px;
+    height: 46px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  /* Espaço reservado quando o jogo ainda não tem foto */
+  .sem-foto {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2a2d5a, #3a3f6b);
+    color: var(--cor-texto-sec);
+  }
+  .capa.sem-foto      { font-size: 3rem; }
+  .capa-mini.sem-foto { font-size: 1.4rem; }
+  .sem-foto span { font-size: .8rem; margin-top: 6px; }
+
   /* Tela de detalhe */
   .detalhe {
     background: var(--cor-cartao);
+    border: 1px solid var(--cor-borda);
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.12);
+    animation: aparecer .4s ease both;
   }
   .detalhe h2 { margin-top: 0; }
   .linha {
     display: flex;
     justify-content: space-between;
     padding: 10px 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--cor-borda);
   }
-  .linha .rotulo { color: #666; }
+  .linha .rotulo { color: var(--cor-texto-sec); }
   .linha .valor  { font-weight: 600; }
   .descricao { margin-top: 16px; line-height: 1.5; }
 
@@ -115,6 +151,11 @@
 
   /* Esconde a tela que não está sendo usada */
   .escondida { display: none; }
+
+  /* Respeita quem prefere menos animação no celular */
+  @media (prefers-reduced-motion: reduce) {
+    header, .item-jogo, .detalhe { animation: none; }
+  }
 </style>
   <!-- PWA:head:inicio (gerado pelo pwa-kit, nao editar a mao) -->
   <link rel="manifest" href="manifest.webmanifest">
@@ -146,21 +187,23 @@
 /* ===== DADOS ===== */
 /* Tabela "jogos". A fonte é o dados.csv do grupo.
    O dados.csv ainda está sem jogos, então usamos exemplos.
-   O campo "descricao" é extra: o app mostra a descrição, mas ela
-   ainda não está na tabela. O grupo decide se vira um campo de verdade. */
+   O campo "foto" guarda a imagem do jogo em base64 (texto que começa com
+   "data:image/..."). Enquanto estiver vazio (""), o app mostra um espaço
+   reservado "foto em breve". Coloque as fotos na pasta imagens/ e me peça
+   para embutir; aí este campo recebe a imagem. */
 const dados = [
   // EXEMPLO: trocar pelos dados do grupo
-  { nome: "Minecraft",       nota: 9.5, faturamento: 3000, genero: "Sandbox",    descricao: "Um mundo de blocos onde você constrói e explora do seu jeito." },
+  { nome: "Minecraft",       nota: 9.5, faturamento: 3000, genero: "Sandbox",    foto: "", descricao: "Um mundo de blocos onde você constrói e explora do seu jeito." },
   // EXEMPLO: trocar pelos dados do grupo
-  { nome: "Celeste",         nota: 9.2, faturamento: 120,  genero: "Plataforma", descricao: "Uma garota escala uma montanha em uma aventura difícil e emocionante." },
+  { nome: "Celeste",         nota: 9.2, faturamento: 120,  genero: "Plataforma", foto: "", descricao: "Uma garota escala uma montanha em uma aventura difícil e emocionante." },
   // EXEMPLO: trocar pelos dados do grupo
-  { nome: "Stardew Valley",  nota: 9.0, faturamento: 300,  genero: "Simulação",  descricao: "Você cuida de uma fazenda e faz amizades em uma cidade pequena." }
+  { nome: "Stardew Valley",  nota: 9.0, faturamento: 300,  genero: "Simulação",  foto: "", descricao: "Você cuida de uma fazenda e faz amizades em uma cidade pequena." }
 ];
 
 /* ===== LÓGICA ===== */
 
 // Coloca os jogos em ordem, da maior nota para a menor.
-// SELECT nome, nota, genero FROM jogos ORDER BY nota DESC
+// SELECT nome, nota, genero, foto FROM jogos ORDER BY nota DESC
 function ordenarPorNota() {
   // slice() faz uma cópia para não bagunçar a lista original
   return dados.slice().sort(function (a, b) {
@@ -168,8 +211,19 @@ function ordenarPorNota() {
   });
 }
 
+// Monta a capa (foto) do jogo.
+// SE o jogo tem foto, mostra a foto; SENÃO, mostra um espaço reservado.
+function capaDoJogo(jogo, classe) {
+  if (jogo.foto !== "") {
+    return `<img class="${classe}" src="${jogo.foto}" alt="Foto de ${jogo.nome}">`;
+  } else {
+    const aviso = (classe === "capa") ? "<span>foto em breve</span>" : "";
+    return `<div class="${classe} sem-foto">🎮${aviso}</div>`;
+  }
+}
+
 // Mostra a tela de detalhe de um jogo escolhido.
-// SELECT nome, nota, faturamento, genero, descricao FROM jogos WHERE nome = ...
+// SELECT nome, nota, faturamento, genero, foto, descricao FROM jogos WHERE nome = ...
 function mostrarDetalhe(indice) {
   const jogo = dados[indice];
   desenharDetalhe(jogo);
@@ -191,14 +245,15 @@ function desenharRanking() {
   const jogos = ordenarPorNota();
   let html = "";
 
-  // Para cada jogo, cria um botão clicável com posição, nome, gênero e nota.
+  // Para cada jogo, cria um botão clicável com posição, foto, nome, gênero e nota.
   for (let i = 0; i < jogos.length; i++) {
     const jogo = jogos[i];
     // Descobre a posição do jogo na lista original, para abrir o detalhe certo
     const indiceOriginal = dados.indexOf(jogo);
     html += `
-      <button class="item-jogo" onclick="mostrarDetalhe(${indiceOriginal})">
+      <button class="item-jogo" onclick="mostrarDetalhe(${indiceOriginal})" style="animation-delay: ${i * 0.08}s">
         <span class="posicao">${i + 1}</span>
+        ${capaDoJogo(jogo, "capa-mini")}
         <span class="info-item">
           <div class="nome">${jogo.nome}</div>
           <div class="genero">${jogo.genero}</div>
@@ -215,6 +270,7 @@ function desenharDetalhe(jogo) {
   document.getElementById("telaDetalhe").innerHTML = `
     <button class="voltar" onclick="voltar()">← Voltar</button>
     <div class="detalhe">
+      ${capaDoJogo(jogo, "capa")}
       <h2>${jogo.nome}</h2>
       <div class="linha"><span class="rotulo">Nota</span><span class="valor">${jogo.nota}</span></div>
       <div class="linha"><span class="rotulo">Gênero</span><span class="valor">${jogo.genero}</span></div>
