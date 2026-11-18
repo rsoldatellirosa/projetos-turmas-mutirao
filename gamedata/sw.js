@@ -3,7 +3,7 @@
 // Todos os apps do site dividem o mesmo endereco (origem) e o mesmo armazenamento:
 // cada app so mexe nos caches com o seu prefixo, para nao apagar o dos outros.
 const PREFIXO = "gamedata-";
-const CACHE = PREFIXO + "20261115-2018";
+const CACHE = PREFIXO + "20261118-1400";
 const ARQUIVOS = ["./", "./index.html", "./manifest.webmanifest",
   "./icone-192.png", "./icone-512.png", "./icone-maskable-512.png"];
 
