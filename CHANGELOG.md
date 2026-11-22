@@ -2,6 +2,10 @@
 
 Registro das últimas mudanças no site dos projetos. O endereço de cada app é fixo; republicar um app no mesmo endereço atualiza o que o QR Code dos alunos mostra, sem precisar gerar QR novo.
 
+## 2026-11-18
+
+- **GameData (`gamedata/`):** publicada a v0.2, a pedido do grupo, com animações, paleta escura e espaços reservados para fotos. Como as imagens ainda não foram incluídas, os espaços mostram “foto em breve”. O kit PWA foi executado novamente junto com a publicação.
+
 ## 2026-11-15
 
 - **PWA:** GameData, Perfumaria, Compras para seu mercado e CineMax agora podem ser instalados no celular (Android pelo Chrome, iPhone pelo Safari) e abrem sem internet depois da primeira visita. Cada app ganhou `manifest.webmanifest`, `sw.js` e ícones na própria pasta; o `index.html` continua abrindo por duplo clique.
