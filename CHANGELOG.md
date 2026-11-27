@@ -5,7 +5,6 @@ Registro das últimas mudanças no site dos projetos. O endereço de cada app é
 ## 2026-11-27
 
 - **GameData (gamedata/):** publicada a v0.3 com tela de introdução, oito jogos novos, busca e filtros. [Commit da v0.3](https://github.com/rsoldatellirosa/projetos-turmas-mutirao/commit/299cbb46bc86052fb8b105d656c1d8f2cd0f6d8f)
-- **Le Pizzaiole (site-meninas/):** publicada a v0.4. A área de ajuda agora apresenta uma biblioteca de tipos de violência, com telas próprias de explicação e canais oficiais de ajuda. O PWA foi reconvertido. [Commit da v0.4](https://github.com/rsoldatellirosa/projetos-turmas-mutirao/commit/125253557628d52f98e77e10fb005a37f2c8cfcc)
 
 ## 2026-11-18
 
