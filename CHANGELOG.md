@@ -6,6 +6,8 @@ Registro das últimas mudanças no site dos projetos. O endereço de cada app é
 
 - **GameData (gamedata/):** publicada a v0.3 com tela de introdução, oito jogos novos, busca e filtros. [Commit da v0.3](https://github.com/rsoldatellirosa/projetos-turmas-mutirao/commit/299cbb46bc86052fb8b105d656c1d8f2cd0f6d8f)
 
+- **Le Pizzaiole (`le-pizzaiole/`):** publicada a v0.4 com biblioteca de tipos de violência, explicações e canais oficiais de ajuda. O PWA foi reconvertido. [Commit da v0.4](https://github.com/rsoldatellirosa/projetos-turmas-mutirao/commit/125253557628d52f98e77e10fb005a37f2c8cfcc)
+
 ## 2026-11-18
 
 - **GameData (`gamedata/`):** publicada a v0.2, a pedido do grupo, com animações, paleta escura e espaços reservados para fotos. Como as imagens ainda não foram incluídas, os espaços mostram “foto em breve”. O kit PWA foi executado novamente junto com a publicação.
