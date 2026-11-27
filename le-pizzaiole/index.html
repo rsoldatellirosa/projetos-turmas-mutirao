@@ -181,6 +181,25 @@
     .servico p { margin: 4px 0 0; }
     .servico .contato { font-size: 1.6rem; font-weight: 800; color: var(--ajuda-destaque); }
 
+    /* Biblioteca dos tipos de violência: cada tipo é um botão que abre a sua tela */
+    .lista-tipos { list-style: none; padding: 0; margin: 16px 0; }
+    .tipo-botao {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: var(--ajuda-cartao);
+      border: 0;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      font: inherit;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--ajuda-texto);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(42, 37, 64, 0.08);
+    }
+
     .rodape-ajuda {
       margin-top: 32px;
       font-size: 0.85rem;
@@ -259,35 +278,45 @@
     </main>
   </section>
 
-  <!-- TELA 4: Ajuda escondida. Abre ao tocar na pizza Calabresa. -->
+  <!-- TELA 4: Ajuda escondida (biblioteca). Abre ao tocar na pizza Calabresa.
+       Mostra a lista dos tipos de violência; cada um abre a tela do tipo. -->
   <section id="tela-ajuda" class="tela-ajuda" hidden>
     <button class="botao-sair" type="button" data-sair>Sair agora</button>
     <main class="ajuda-conteudo">
       <h1 id="titulo-ajuda" tabindex="-1">Você não está sozinha</h1>
-      <p>Tipo de violência: <strong>abuso físico</strong></p>
+      <p>Toque no tipo de violência para entender melhor e ver para quem ligar.</p>
+
+      <ul id="lista-tipos" class="lista-tipos"></ul>
+
+      <div class="botoes-ajuda">
+        <button id="ir-ligar" class="botao-ajuda" type="button">Ligar para ajuda</button>
+        <button id="ir-numeros" class="botao-ajuda" type="button">Ver todos os números</button>
+      </div>
+
+      <p class="rodape-ajuda">Protótipo escolar. Aponta para os canais oficiais e não guarda nenhum dado de quem acessa.</p>
+    </main>
+  </section>
+
+  <!-- TELA 4b: Tipo de violência escolhido na biblioteca (o que é, exemplos e números). -->
+  <section id="tela-tipo" class="tela-ajuda" hidden>
+    <button class="botao-sair" type="button" data-sair>Sair agora</button>
+    <main class="ajuda-conteudo">
+      <h1 id="titulo-tipo" tabindex="-1"></h1>
 
       <div class="caixa-destaque">
         <p>Para denunciar ou pedir ajuda, ligue:</p>
-        <p class="numeros">180 ou 190</p>
+        <p class="numeros" id="tipo-ligar"></p>
       </div>
 
       <h2>O que é</h2>
-      <p>O abuso físico é qualquer ação que usa a força física para machucar, ferir, causar dor ou colocar outra pessoa em perigo.</p>
+      <p id="tipo-oque"></p>
 
       <h2>Exemplos</h2>
-      <ul>
-        <li>bater, dar tapas, socos ou chutes;</li>
-        <li>empurrar uma pessoa com força;</li>
-        <li>puxar os cabelos;</li>
-        <li>dar beliscões;</li>
-        <li>apertar a pele com força;</li>
-        <li>queimar;</li>
-        <li>estrangular ou enforcar.</li>
-      </ul>
+      <ul id="tipo-exemplos"></ul>
 
       <div class="botoes-ajuda">
-        <button id="ir-numeros" class="botao-ajuda" type="button">Ver todos os números</button>
-        <button id="finalizar-pedido" class="botao-ajuda" type="button">Finalizar pedido</button>
+        <button id="ir-ligar-2" class="botao-ajuda" type="button">Ligar agora</button>
+        <button id="voltar-ajuda-3" class="botao-voltar-ajuda" type="button">← Voltar</button>
       </div>
 
       <p class="rodape-ajuda">Protótipo escolar. Aponta para os canais oficiais e não guarda nenhum dado de quem acessa.</p>
@@ -327,7 +356,61 @@
     // mas eles só aparecem aqui depois de conferidos e colocados no dados.csv.
     const dados = [
       { nome: "Ligue 180 (Central de Atendimento à Mulher)", tipo: "telefone e WhatsApp", atende: "24 horas", contato: "180 / (61) 9610-0180" },
-      { nome: "190 (Polícia Militar)", tipo: "telefone", atende: "24 horas", contato: "190" }
+      { nome: "190 (Polícia Militar)", tipo: "telefone", atende: "24 horas", contato: "190" },
+      { nome: "Disque 100 (Direitos Humanos)", tipo: "telefone", atende: "24 horas", contato: "100" }
+    ];
+
+    // Tabela tipos_de_violencia: cada registro é um tipo que a pessoa pode consultar
+    // na ajuda. O campo "pizza" lembra qual pizza o grupo ligou a cada tipo.
+    const tiposDeViolencia = [
+      {
+        pizza: "Calabresa", titulo: "Abuso físico",
+        oQueE: "O abuso físico é qualquer ação que usa a força física para machucar, ferir, causar dor ou colocar outra pessoa em perigo.",
+        exemplos: ["bater, dar tapas, socos ou chutes", "empurrar uma pessoa com força", "puxar os cabelos", "dar beliscões", "apertar a pele com força", "queimar", "estrangular ou enforcar"],
+        ligar: "180 ou 190"
+      },
+      {
+        pizza: "Frango com Catupiry", titulo: "Abuso psicológico",
+        oQueE: "A violência psicológica acontece quando alguém causa sofrimento emocional, medo ou prejudica a autoestima de outra pessoa.",
+        exemplos: ["humilhar ou ofender", "fazer ameaças", "controlar amizades", "fazer chantagens emocionais", "isolar a pessoa da família", "diminuir a autoestima"],
+        ligar: "180 ou 190"
+      },
+      {
+        pizza: "Quatro Queijos", titulo: "Abuso sexual",
+        oQueE: "A violência sexual acontece quando alguém pratica ou tenta praticar atos de natureza sexual sem o consentimento da outra pessoa.",
+        exemplos: ["tocar alguém sem consentimento", "praticar assédio sexual", "obrigar alguém a beijar", "compartilhar imagens íntimas sem autorização", "fazer ameaças de natureza sexual"],
+        ligar: "180, 190 ou 100"
+      },
+      {
+        pizza: "Portuguesa", titulo: "Abuso moral",
+        oQueE: "A violência moral acontece quando alguém ataca a honra, a reputação ou a dignidade de outra pessoa.",
+        exemplos: ["espalhar mentiras", "fazer acusações falsas", "inventar histórias", "ofender publicamente", "espalhar boatos", "prejudicar a reputação de alguém"],
+        ligar: "180 ou 190"
+      },
+      {
+        pizza: "Margherita", titulo: "Abuso patrimonial",
+        oQueE: "A violência patrimonial acontece quando alguém controla, retém, destrói ou tira os bens, documentos ou dinheiro de outra pessoa.",
+        exemplos: ["esconder documentos pessoais", "reter dinheiro", "destruir objetos pessoais", "controlar o dinheiro da vítima", "impedir o acesso aos próprios bens", "tomar cartões sem autorização"],
+        ligar: "180 ou 190"
+      },
+      {
+        pizza: "Mussarela", titulo: "Violência verbal",
+        oQueE: "A violência verbal acontece quando alguém utiliza palavras para ofender, humilhar, ameaçar ou desrespeitar outra pessoa, causando sofrimento emocional.",
+        exemplos: ["gritar e xingar", "fazer insultos", "colocar apelidos ofensivos", "fazer comentários humilhantes", "ameaçar verbalmente", "ridicularizar alguém na frente de outras pessoas"],
+        ligar: "Disque 100 ou procure um serviço de proteção"
+      },
+      {
+        pizza: "Pepperoni", titulo: "Violência virtual",
+        oQueE: "A violência virtual acontece quando alguém utiliza a internet, redes sociais ou aplicativos para ameaçar, constranger ou prejudicar outra pessoa.",
+        exemplos: ["praticar cyberbullying", "criar perfis falsos para prejudicar alguém", "enviar mensagens ameaçadoras", "divulgar informações pessoais sem autorização", "perseguir alguém pelas redes sociais", "fazer humilhações na internet"],
+        ligar: "Disque 100"
+      },
+      {
+        pizza: "Chocolate com Morango", titulo: "Violência institucional",
+        oQueE: "A violência institucional acontece quando uma pessoa sofre desrespeito, discriminação, humilhação ou tratamento inadequado dentro de instituições ou serviços, como hospitais, escolas e órgãos públicos.",
+        exemplos: ["humilhar alguém durante um atendimento", "negar atendimento sem justificativa", "discriminar uma pessoa", "desrespeitar os direitos de alguém", "ignorar uma denúncia", "tratar uma vítima com preconceito"],
+        ligar: "Disque 100 ou procure os canais de denúncia da instituição"
+      }
     ];
 
     // Cardápio da pizzaria. É só informação da interface (o disfarce), não é o banco de dados.
@@ -507,6 +590,7 @@
       cardapio: document.getElementById("tela-cardapio"),
       pizza: document.getElementById("tela-pizza"),
       ajuda: document.getElementById("tela-ajuda"),
+      tipo: document.getElementById("tela-tipo"),
       numeros: document.getElementById("tela-numeros"),
       ligar: document.getElementById("tela-ligar")
     };
@@ -547,6 +631,25 @@
       document.getElementById("titulo-ligar").focus();
     }
 
+    // Mostra a tela de um tipo de violência (o que é, exemplos e para quem ligar)
+    function mostrarTipo(tipo) {
+      document.getElementById("titulo-tipo").textContent = tipo.titulo;
+      document.getElementById("tipo-ligar").textContent = tipo.ligar;
+      document.getElementById("tipo-oque").textContent = tipo.oQueE;
+
+      // Monta a lista de exemplos deste tipo
+      const listaExemplos = document.getElementById("tipo-exemplos");
+      listaExemplos.innerHTML = "";
+      for (const exemplo of tipo.exemplos) {
+        const item = document.createElement("li");
+        item.textContent = exemplo;
+        listaExemplos.append(item);
+      }
+
+      mostrarTela("tipo");
+      document.getElementById("titulo-tipo").focus();
+    }
+
     // Monta um botão para cada pizza do cardápio
     function montarCardapio() {
       const lista = document.getElementById("lista-pizzas");
@@ -562,6 +665,24 @@
           '<p class="pizza-ingredientes">' + pizza.ingredientes + '</p>' +
           '</div>';
         botao.addEventListener("click", function () { escolherPizza(pizza); });
+
+        item.append(botao);
+        lista.append(item);
+      }
+    }
+
+    // Monta a lista de tipos de violência dentro da ajuda (um botão para cada tipo)
+    // SELECT titulo FROM tipos_de_violencia
+    function montarBiblioteca() {
+      const lista = document.getElementById("lista-tipos");
+      for (const tipo of tiposDeViolencia) {
+        const item = document.createElement("li");
+
+        const botao = document.createElement("button");
+        botao.className = "tipo-botao";
+        botao.type = "button";
+        botao.textContent = tipo.titulo;
+        botao.addEventListener("click", function () { mostrarTipo(tipo); });
 
         item.append(botao);
         lista.append(item);
@@ -618,13 +739,17 @@
     document.getElementById("ir-cardapio").addEventListener("click", mostrarCardapio);
     document.getElementById("voltar-cardapio-1").addEventListener("click", mostrarCardapio);
 
-    // Botões de dentro da ajuda
+    // Botões de dentro da ajuda (a biblioteca de tipos)
+    document.getElementById("ir-ligar").addEventListener("click", mostrarLigar);
     document.getElementById("ir-numeros").addEventListener("click", mostrarNumeros);
-    document.getElementById("finalizar-pedido").addEventListener("click", mostrarLigar);
 
-    // Setas de voltar: voltam para a tela da Calabresa (a ajuda)
+    // Botão de ligar dentro da tela de um tipo
+    document.getElementById("ir-ligar-2").addEventListener("click", mostrarLigar);
+
+    // Setas de voltar: voltam para a biblioteca (a ajuda)
     document.getElementById("voltar-ajuda-1").addEventListener("click", mostrarAjuda);
     document.getElementById("voltar-ajuda-2").addEventListener("click", mostrarAjuda);
+    document.getElementById("voltar-ajuda-3").addEventListener("click", mostrarAjuda);
 
     // "Sair agora": qualquer um dos botões volta na hora para a pizzaria
     for (const botao of document.querySelectorAll("[data-sair]")) {
@@ -636,6 +761,7 @@
     window.addEventListener("pagehide", mostrarInicio);
 
     montarCardapio();
+    montarBiblioteca();
     montarNumeros();
     montarLigar();
   </script>

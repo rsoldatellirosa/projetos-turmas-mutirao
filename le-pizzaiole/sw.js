@@ -3,7 +3,7 @@
 // Todos os apps do site dividem o mesmo endereco (origem) e o mesmo armazenamento:
 // cada app so mexe nos caches com o seu prefixo, para nao apagar o dos outros.
 const PREFIXO = "le-pizzaiole-";
-const CACHE = PREFIXO + "20261124-1018";
+const CACHE = PREFIXO + "20261126-2126";
 const ARQUIVOS = ["./", "./index.html", "./manifest.webmanifest",
   "./icone-192.png", "./icone-512.png", "./icone-maskable-512.png"];
 
