@@ -30,6 +30,28 @@
   @keyframes descer   { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes aparecer { from { opacity: 0; transform: translateY(12px);  } to { opacity: 1; transform: translateY(0); } }
 
+  /* Tela de introdução (pedido do grupo na v0.3) */
+  @keyframes introEntra { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
+  @keyframes introSai   { from { opacity: 1; } to { opacity: 0; } }
+
+  #telaIntro {
+    position: fixed;
+    inset: 0;                         /* cobre a tela inteira */
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--cor-fundo);
+    cursor: pointer;                  /* pode tocar para pular */
+    animation: introEntra .7s ease both;
+  }
+  #telaIntro.saindo { animation: introSai .5s ease forwards; }   /* some suavemente */
+  #telaIntro .logo    { font-size: 4.5rem; animation: descer .7s ease both; }
+  #telaIntro .titulo  { font-size: 2.6rem; font-weight: bold; margin: 10px 0 0; letter-spacing: 1px; }
+  #telaIntro .legenda { color: var(--cor-texto-sec); margin-top: 6px; font-size: .95rem; }
+  #telaIntro .toque   { color: var(--cor-texto-sec); margin-top: 28px; font-size: .8rem; opacity: .7; }
+
   /* Faixa do topo */
   header {
     background: var(--cor-principal);
@@ -46,6 +68,32 @@
     max-width: 640px;
     margin: 0 auto;
     padding: 16px;
+  }
+
+  /* Barra de pesquisa + filtros (pedido do grupo na v0.3) */
+  .barra-busca {
+    display: flex;
+    flex-wrap: wrap;                  /* quebra em duas linhas no celular estreito */
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .barra-busca input,
+  .barra-busca select {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--cor-borda);
+    background: var(--cor-cartao);
+    color: var(--cor-texto);
+    font-size: .95rem;
+  }
+  .barra-busca input  { flex: 1 1 150px; min-width: 0; }   /* campo de texto estica */
+  .barra-busca select { flex: 1 1 150px; cursor: pointer; }
+
+  /* Aviso quando a busca não encontra nenhum jogo */
+  .vazio {
+    text-align: center;
+    color: var(--cor-texto-sec);
+    padding: 30px 10px;
   }
 
   /* Cada jogo na lista do ranking */
@@ -154,7 +202,7 @@
 
   /* Respeita quem prefere menos animação no celular */
   @media (prefers-reduced-motion: reduce) {
-    header, .item-jogo, .detalhe { animation: none; }
+    header, .item-jogo, .detalhe, #telaIntro, #telaIntro .logo { animation: none; }
   }
 </style>
   <!-- PWA:head:inicio (gerado pelo pwa-kit, nao editar a mao) -->
@@ -168,6 +216,14 @@
 </head>
 <body>
 
+<!-- Tela de introdução: aparece ao abrir e some sozinha depois de ~2 segundos -->
+<section id="telaIntro" onclick="fecharIntro()">
+  <div class="logo">🎮</div>
+  <div class="titulo">GameData</div>
+  <div class="legenda">Ranking de jogos</div>
+  <div class="toque">toque para começar</div>
+</section>
+
 <header>
   <h1>🎮 GameData</h1>
   <p>Ranking de jogos mais bem avaliados</p>
@@ -176,8 +232,22 @@
 <main>
   <!-- ===== TELAS ===== -->
 
-  <!-- Tela 1: Ranking (lista dos jogos) -->
-  <section id="telaRanking"></section>
+  <!-- Tela 1: Ranking (barra de pesquisa + lista dos jogos) -->
+  <section id="telaRanking">
+    <div class="barra-busca">
+      <!-- Campo de texto: filtra pelos nomes enquanto a pessoa digita -->
+      <input id="campoBusca" type="text" placeholder="Pesquisar jogo..." oninput="aoBuscar(this.value)">
+      <!-- Lista de filtros de ordenação (pedido do grupo na v0.3) -->
+      <select id="campoOrdem" onchange="aoOrdenar(this.value)">
+        <option value="nota-alta">Nota mais alta</option>
+        <option value="nota-baixa">Nota mais baixa</option>
+        <option value="fat-alta">Maior faturamento</option>
+        <option value="fat-baixa">Menor faturamento</option>
+        <option value="pesquisado">Mais pesquisado</option>
+      </select>
+    </div>
+    <div id="listaRanking"></div>
+  </section>
 
   <!-- Tela 2: Detalhe de um jogo (começa escondida) -->
   <section id="telaDetalhe" class="escondida"></section>
@@ -186,29 +256,72 @@
 <script>
 /* ===== DADOS ===== */
 /* Tabela "jogos". A fonte é o dados.csv do grupo.
-   O dados.csv ainda está sem jogos, então usamos exemplos.
+   ATENÇÃO, GRUPO: as NOTAS e os FATURAMENTOS abaixo são valores de REFERÊNCIA
+   (notas no estilo Metacritic e faturamentos aproximados). CONFIRAM e ajustem
+   os números de vocês no dados.csv. Casos especiais marcados em cada linha:
+   GTA 6 ainda não foi lançado e BeamNG.Drive está em acesso antecipado.
+
    O campo "foto" guarda a imagem do jogo em base64 (texto que começa com
    "data:image/..."). Enquanto estiver vazio (""), o app mostra um espaço
-   reservado "foto em breve". Coloque as fotos na pasta imagens/ e me peça
-   para embutir; aí este campo recebe a imagem. */
+   reservado "foto em breve". Coloquem as fotos na pasta imagens/ e me peçam
+   para embutir; aí este campo recebe a imagem.
+
+   O campo "pesquisas" começa em 0 e conta quantas vezes o jogo foi aberto
+   nesta sessão (serve para o filtro "mais pesquisado"). Nada é guardado de
+   ninguém: ao recarregar a página, a contagem volta a zero. */
 const dados = [
-  // EXEMPLO: trocar pelos dados do grupo
-  { nome: "Minecraft",       nota: 9.5, faturamento: 3000, genero: "Sandbox",    foto: "", descricao: "Um mundo de blocos onde você constrói e explora do seu jeito." },
-  // EXEMPLO: trocar pelos dados do grupo
-  { nome: "Celeste",         nota: 9.2, faturamento: 120,  genero: "Plataforma", foto: "", descricao: "Uma garota escala uma montanha em uma aventura difícil e emocionante." },
-  // EXEMPLO: trocar pelos dados do grupo
-  { nome: "Stardew Valley",  nota: 9.0, faturamento: 300,  genero: "Simulação",  foto: "", descricao: "Você cuida de uma fazenda e faz amizades em uma cidade pequena." }
+  { nome: "The Legend of Zelda: Ocarina of Time", nota: 9.9, faturamento: 300,  genero: "Aventura",            foto: "", pesquisas: 0, descricao: "Link viaja no tempo para salvar o reino de Hyrule." },
+  { nome: "Grand Theft Auto V",                    nota: 9.7, faturamento: 8000, genero: "Ação / Mundo aberto", foto: "", pesquisas: 0, descricao: "Três criminosos se unem em assaltos na cidade de Los Santos." },
+  { nome: "The Legend of Zelda: Breath of the Wild", nota: 9.7, faturamento: 1000, genero: "Aventura / Mundo aberto", foto: "", pesquisas: 0, descricao: "Explore o reino de Hyrule livremente e enfrente Ganon." },
+  { nome: "Red Dead Redemption 2",                 nota: 9.7, faturamento: 1900, genero: "Ação / Mundo aberto", foto: "", pesquisas: 0, descricao: "A vida de um fora da lei no faroeste americano." },
+  { nome: "Grand Theft Auto VI",                   nota: 9.6, faturamento: 0,    genero: "Ação / Mundo aberto", foto: "", pesquisas: 0, descricao: "Novo jogo da série GTA. Ainda não foi lançado — nota e faturamento são uma estimativa a confirmar." },
+  { nome: "Minecraft",                             nota: 9.5, faturamento: 3000, genero: "Sandbox",             foto: "", pesquisas: 0, descricao: "Um mundo de blocos onde você constrói e explora do seu jeito." },
+  { nome: "Celeste",                               nota: 9.2, faturamento: 120,  genero: "Plataforma",          foto: "", pesquisas: 0, descricao: "Uma garota escala uma montanha em uma aventura difícil e emocionante." },
+  { nome: "Stardew Valley",                        nota: 9.0, faturamento: 300,  genero: "Simulação",           foto: "", pesquisas: 0, descricao: "Você cuida de uma fazenda e faz amizades em uma cidade pequena." },
+  { nome: "Far Cry 4",                             nota: 8.5, faturamento: 600,  genero: "Ação / Tiro",         foto: "", pesquisas: 0, descricao: "Um país fictício do Himalaia dominado por um ditador." },
+  { nome: "Need for Speed: Most Wanted",           nota: 8.3, faturamento: 400,  genero: "Corrida",             foto: "", pesquisas: 0, descricao: "Corridas de rua fugindo da polícia." },
+  { nome: "BeamNG.drive",                          nota: 8.0, faturamento: 100,  genero: "Simulação / Corrida", foto: "", pesquisas: 0, descricao: "Simulador de carros com física realista de batidas. Está em acesso antecipado — nota a confirmar." }
 ];
 
 /* ===== LÓGICA ===== */
 
-// Coloca os jogos em ordem, da maior nota para a menor.
-// SELECT nome, nota, genero, foto FROM jogos ORDER BY nota DESC
-function ordenarPorNota() {
-  // slice() faz uma cópia para não bagunçar a lista original
-  return dados.slice().sort(function (a, b) {
-    return b.nota - a.nota;
+// Guarda o que a pessoa digitou na busca e qual filtro ela escolheu.
+let textoBusca = "";
+let ordemAtual = "nota-alta";
+
+// Filtra pelos nomes e depois coloca na ordem escolhida.
+// SELECT nome, nota, faturamento, genero, foto FROM jogos
+//   WHERE nome LIKE '%texto%' ORDER BY (campo escolhido)
+function filtrarEOrdenar() {
+  // 1) FILTRO: fica só com os jogos cujo nome contém o texto digitado
+  const busca = textoBusca.toLowerCase();
+  let lista = dados.filter(function (jogo) {
+    return jogo.nome.toLowerCase().includes(busca);
   });
+
+  // 2) ORDEM: organiza a lista conforme o filtro escolhido (SE/ENTÃO)
+  lista = lista.slice().sort(function (a, b) {
+    if (ordemAtual === "nota-alta")  return b.nota - a.nota;              // ORDER BY nota DESC
+    if (ordemAtual === "nota-baixa") return a.nota - b.nota;             // ORDER BY nota ASC
+    if (ordemAtual === "fat-alta")   return b.faturamento - a.faturamento; // ORDER BY faturamento DESC
+    if (ordemAtual === "fat-baixa")  return a.faturamento - b.faturamento; // ORDER BY faturamento ASC
+    if (ordemAtual === "pesquisado") return b.pesquisas - a.pesquisas;   // ORDER BY pesquisas DESC
+    return 0;
+  });
+
+  return lista;
+}
+
+// Quando a pessoa digita na busca: guarda o texto e redesenha o ranking.
+function aoBuscar(texto) {
+  textoBusca = texto;
+  desenharRanking();
+}
+
+// Quando a pessoa troca o filtro: guarda a escolha e redesenha o ranking.
+function aoOrdenar(ordem) {
+  ordemAtual = ordem;
+  desenharRanking();
 }
 
 // Monta a capa (foto) do jogo.
@@ -226,24 +339,42 @@ function capaDoJogo(jogo, classe) {
 // SELECT nome, nota, faturamento, genero, foto, descricao FROM jogos WHERE nome = ...
 function mostrarDetalhe(indice) {
   const jogo = dados[indice];
+  // Conta +1 pesquisa deste jogo (usado no filtro "mais pesquisado")
+  jogo.pesquisas = jogo.pesquisas + 1;
   desenharDetalhe(jogo);
   // Troca de tela: esconde o ranking, mostra o detalhe
   document.getElementById("telaRanking").classList.add("escondida");
   document.getElementById("telaDetalhe").classList.remove("escondida");
 }
 
-// Volta do detalhe para o ranking.
+// Volta do detalhe para o ranking (redesenha para atualizar a contagem e a ordem).
 function voltar() {
   document.getElementById("telaDetalhe").classList.add("escondida");
   document.getElementById("telaRanking").classList.remove("escondida");
+  desenharRanking();
+}
+
+// Fecha a tela de introdução.
+function fecharIntro() {
+  const intro = document.getElementById("telaIntro");
+  if (intro.style.display === "none") return;   // já fechou, não faz de novo
+  intro.classList.add("saindo");                // some suavemente (opacidade)
+  // Depois da animação de saída, tira a tela da frente para liberar os cliques
+  setTimeout(function () { intro.style.display = "none"; }, 500);
 }
 
 /* ===== TELAS ===== */
 
 // Desenha a lista do ranking na Tela 1.
 function desenharRanking() {
-  const jogos = ordenarPorNota();
+  const jogos = filtrarEOrdenar();
   let html = "";
+
+  // SE a busca não achou nenhum jogo, mostra um aviso
+  if (jogos.length === 0) {
+    document.getElementById("listaRanking").innerHTML = `<p class="vazio">Nenhum jogo encontrado.</p>`;
+    return;
+  }
 
   // Para cada jogo, cria um botão clicável com posição, foto, nome, gênero e nota.
   for (let i = 0; i < jogos.length; i++) {
@@ -251,7 +382,7 @@ function desenharRanking() {
     // Descobre a posição do jogo na lista original, para abrir o detalhe certo
     const indiceOriginal = dados.indexOf(jogo);
     html += `
-      <button class="item-jogo" onclick="mostrarDetalhe(${indiceOriginal})" style="animation-delay: ${i * 0.08}s">
+      <button class="item-jogo" onclick="mostrarDetalhe(${indiceOriginal})" style="animation-delay: ${i * 0.06}s">
         <span class="posicao">${i + 1}</span>
         ${capaDoJogo(jogo, "capa-mini")}
         <span class="info-item">
@@ -262,7 +393,7 @@ function desenharRanking() {
       </button>`;
   }
 
-  document.getElementById("telaRanking").innerHTML = html;
+  document.getElementById("listaRanking").innerHTML = html;
 }
 
 // Desenha a Tela 2 com os dados de um jogo.
@@ -275,12 +406,15 @@ function desenharDetalhe(jogo) {
       <div class="linha"><span class="rotulo">Nota</span><span class="valor">${jogo.nota}</span></div>
       <div class="linha"><span class="rotulo">Gênero</span><span class="valor">${jogo.genero}</span></div>
       <div class="linha"><span class="rotulo">Faturamento (milhões)</span><span class="valor">${jogo.faturamento}</span></div>
+      <div class="linha"><span class="rotulo">Vezes aberto</span><span class="valor">${jogo.pesquisas}</span></div>
       <p class="descricao">${jogo.descricao}</p>
     </div>`;
 }
 
-// Quando a página abre, desenha o ranking.
+// Quando a página abre, desenha o ranking (atrás da tela de introdução)
+// e fecha a introdução sozinho depois de 2 segundos.
 desenharRanking();
+setTimeout(fecharIntro, 2000);
 </script>
 
   <!-- PWA:registro:inicio (gerado pelo pwa-kit, nao editar a mao) -->
